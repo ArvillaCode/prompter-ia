@@ -1,0 +1,20 @@
+export enum AppMode {
+  EDITOR = 'EDITOR',
+  PROMPTER = 'PROMPTER'
+}
+
+export interface PrompterSettings {
+  scrollSpeed: number; // 0 to 100
+  fontSize: number; // pixel value
+  isMirroredX: boolean; // For beam splitter glass
+  isMirroredY: boolean; // Vertical flip
+  useCamera: boolean;
+  margin: number; // percentage
+  opacity: number; // text opacity
+  lineHeight: number;
+}
+
+export interface ScriptData {
+  title: string;
+  content: string;
+}
