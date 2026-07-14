@@ -12,6 +12,8 @@ export interface PrompterSettings {
   margin: number; // percentage
   opacity: number; // text opacity
   lineHeight: number;
+  audioDeviceId?: string; // selected microphone (undefined = browser default)
+  videoDeviceId?: string; // selected camera (undefined = browser default)
 }
 
 export interface ScriptData {

@@ -30,10 +30,25 @@ const DEFAULT_SETTINGS: PrompterSettings = {
   lineHeight: 1.5
 };
 
+const SCRIPT_STORAGE_KEY = 'proprompter-script';
+const SETTINGS_STORAGE_KEY = 'proprompter-settings';
+
+const loadSavedSettings = (): PrompterSettings => {
+  try {
+    const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (saved) {
+      return { ...DEFAULT_SETTINGS, ...JSON.parse(saved), useCamera: false };
+    }
+  } catch {
+    // Ignorar settings corruptos y usar los valores por defecto
+  }
+  return DEFAULT_SETTINGS;
+};
+
 export default function App() {
   const [mode, setMode] = useState<AppMode>(AppMode.EDITOR);
-  const [script, setScript] = useState(DEFAULT_SCRIPT);
-  const [settings, setSettings] = useState<PrompterSettings>(DEFAULT_SETTINGS);
+  const [script, setScript] = useState(() => localStorage.getItem(SCRIPT_STORAGE_KEY) ?? DEFAULT_SCRIPT);
+  const [settings, setSettings] = useState<PrompterSettings>(loadSavedSettings);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [wordCount, setWordCount] = useState(0);
   const [estTime, setEstTime] = useState(0);
@@ -44,6 +59,18 @@ export default function App() {
     // Average speaking rate ~130 wpm
     setEstTime(Math.ceil(words / 130));
   }, [script]);
+
+  // Autosave script (debounced) and settings
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      localStorage.setItem(SCRIPT_STORAGE_KEY, script);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [script]);
+
+  useEffect(() => {
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  }, [settings]);
 
   if (mode === AppMode.PROMPTER) {
     return (
