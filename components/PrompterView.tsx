@@ -303,8 +303,11 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
     };
 
     window.addEventListener('mousemove', handleMouseMove);
+    // On touch screens there is no mousemove: any tap brings the controls back
+    window.addEventListener('touchstart', handleMouseMove);
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchstart', handleMouseMove);
       clearTimeout(timeout);
     };
   }, [isPlaying]);
@@ -411,8 +414,8 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
       )}
 
       {/* Controls Layer */}
-      <div className={`absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-slate-800 p-4 md:p-6 max-h-70dvh overflow-y-auto transition-transform duration-300 z-50 ${showControls ? 'translate-y-0' : 'translate-y-full'}`}>
-        <div className="max-w-6xl mx-auto flex flex-col gap-4">
+      <div className={`absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-slate-800 p-3 md:p-6 max-h-70dvh overflow-y-auto overscroll-contain transition-transform duration-300 z-50 ${showControls ? 'translate-y-0' : 'translate-y-full'}`}>
+        <div className="max-w-6xl mx-auto flex flex-col gap-3 md:gap-4">
             
             {/* Main Transport */}
             <div className="flex items-center justify-between">
@@ -420,8 +423,8 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                     <ArrowLeft size={20} /> <span className="hidden sm:inline">Volver al Editor</span>
                 </button>
 
-                <div className="flex items-center gap-6">
-                    <button 
+                <div className="flex items-center gap-4 md:gap-6">
+                    <button
                         onClick={() => {
                             if (scrollRef.current) scrollRef.current.scrollTop = 0;
                             scrollPosRef.current = 0;
@@ -451,11 +454,11 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                     )}
                 </div>
 
-                <div className="w-[120px]"></div> {/* Spacer for balance */}
+                <div className="hidden md:block w-[120px]"></div> {/* Spacer for balance */}
             </div>
 
             {/* Advanced Settings Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-4 border-t border-slate-800/50">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 pt-3 md:pt-4 border-t border-slate-800/50">
                 {/* Speed */}
                 <div className="space-y-2">
                     <div className="flex justify-between text-xs text-slate-400 font-medium">
@@ -481,7 +484,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => updateSettings({...settings, fontSize: Math.max(24, settings.fontSize - 4)})}
-                            className="w-10 h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                            className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
                             aria-label="Reducir tamaño de letra"
                         >
                             <Minus size={18} />
@@ -496,7 +499,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                         />
                         <button
                             onClick={() => updateSettings({...settings, fontSize: Math.min(120, settings.fontSize + 4)})}
-                            className="w-10 h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                            className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
                             aria-label="Aumentar tamaño de letra"
                         >
                             <Plus size={18} />
@@ -521,7 +524,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                 </div>
 
                 {/* Toggles */}
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center justify-between gap-1 md:gap-2">
                     <button
                         onClick={() => updateSettings({...settings, isMirroredX: !settings.isMirroredX})}
                         className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.isMirroredX ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
@@ -585,7 +588,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
 
             {/* Device Selectors (visible when camera is on) */}
             {settings.useCamera && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-800/50">
+                <div className="grid grid-cols-2 gap-3 md:gap-4 pt-3 md:pt-4 border-t border-slate-800/50">
                     <div className="space-y-1">
                         <label className="flex items-center gap-2 text-xs text-slate-400 font-medium">
                             <Mic size={14} /> Micrófono
