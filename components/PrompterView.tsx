@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { PrompterSettings } from '../types';
-import { ArrowLeft, Play, Pause, RefreshCw, Settings, Type, Monitor, Video, StopCircle, Download, X, AlertCircle, Minus, Plus, Mic, Camera } from 'lucide-react';
+import { ArrowLeft, Play, Pause, RefreshCw, Settings, Monitor, Video, StopCircle, Download, X, AlertCircle, Minus, Plus, Mic, Camera } from 'lucide-react';
 import { Button } from './Button';
 
 interface PrompterViewProps {
   script: string;
   settings: PrompterSettings;
-  updateSettings: (settings: PrompterSettings) => void;
+  updateSettings: React.Dispatch<React.SetStateAction<PrompterSettings>>;
   onExit: () => void;
 }
 
@@ -26,8 +26,13 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const [recordedVideoUrl, setRecordedVideoUrl] = useState<string | null>(null);
+  const [recordedExt, setRecordedExt] = useState<'mp4' | 'webm'>('webm');
+  const [countdown, setCountdown] = useState<number | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+
+  const isRecordingRef = useRef(false);
+  useEffect(() => { isRecordingRef.current = isRecording; }, [isRecording]);
 
   // Available input devices (labels are only populated after permission is granted)
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
@@ -55,6 +60,70 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
   useEffect(() => {
     settingsRef.current = settings;
   }, [settings]);
+
+  // Keep the screen awake while the prompter is open (mobile screens lock mid-read)
+  useEffect(() => {
+    let lock: any = null;
+    const acquire = async () => {
+      try {
+        lock = await (navigator as any).wakeLock?.request('screen');
+      } catch {
+        // Unsupported browser or denied: not critical
+      }
+    };
+    acquire();
+    // The lock is released automatically when the tab goes to background; re-acquire on return
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') acquire();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      if (lock) lock.release().catch(() => {});
+    };
+  }, []);
+
+  // Keyboard shortcuts — also works with Bluetooth presenter remotes,
+  // which the device sees as a keyboard (they send PageUp/PageDown)
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      switch (e.code) {
+        case 'Space':
+        case 'PageDown':
+          e.preventDefault();
+          setIsPlaying(p => !p);
+          break;
+        case 'PageUp':
+          e.preventDefault();
+          if (scrollRef.current) scrollRef.current.scrollTop = 0;
+          scrollPosRef.current = 0;
+          setIsPlaying(false);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          updateSettings(prev => ({ ...prev, scrollSpeed: Math.min(100, prev.scrollSpeed + 5) }));
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          updateSettings(prev => ({ ...prev, scrollSpeed: Math.max(0, prev.scrollSpeed - 5) }));
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          updateSettings(prev => ({ ...prev, fontSize: Math.min(120, prev.fontSize + 4) }));
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          updateSettings(prev => ({ ...prev, fontSize: Math.max(24, prev.fontSize - 4) }));
+          break;
+        case 'Escape':
+          if (!isRecordingRef.current) onExit();
+          break;
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Initialize Camera
   useEffect(() => {
@@ -85,7 +154,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
           if (hadSelection && (name === 'OverconstrainedError' || name === 'NotFoundError')) {
             newStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             if (!cancelled) {
-              updateSettings({ ...settingsRef.current, audioDeviceId: undefined, videoDeviceId: undefined });
+              updateSettings(prev => ({ ...prev, audioDeviceId: undefined, videoDeviceId: undefined }));
             }
           } else {
             throw err;
@@ -110,7 +179,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
         console.error("Camera/Mic access denied", err);
         if (!cancelled) {
           setCameraError("No se pudo acceder a la cámara/micrófono. Revisa los permisos del navegador.");
-          updateSettings({ ...settingsRef.current, useCamera: false });
+          updateSettings(prev => ({ ...prev, useCamera: false }));
         }
       }
     };
@@ -125,10 +194,13 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
   }, [settings.useCamera, settings.audioDeviceId, settings.videoDeviceId]);
 
   // Recording Functions
-  const startRecording = () => {
+  const beginRecording = () => {
     if (!stream) return;
-    
-    const mediaRecorder = new MediaRecorder(stream);
+
+    // Prefer MP4 when the browser can mux it (better editor compatibility)
+    const preferredTypes = ['video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'];
+    const mimeType = preferredTypes.find(t => MediaRecorder.isTypeSupported(t));
+    const mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
     mediaRecorderRef.current = mediaRecorder;
     chunksRef.current = [];
 
@@ -139,14 +211,35 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
     };
 
     mediaRecorder.onstop = () => {
-        const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+        const type = mimeType || 'video/webm';
+        const blob = new Blob(chunksRef.current, { type });
         const url = URL.createObjectURL(blob);
+        setRecordedExt(type.includes('mp4') ? 'mp4' : 'webm');
         setRecordedVideoUrl(url);
     };
 
     mediaRecorder.start();
     setIsRecording(true);
+    setIsPlaying(true); // Start scrolling along with the recording
   };
+
+  // Pressing record starts a 3-2-1 countdown before actually recording
+  const startRecording = () => {
+    if (!stream || isRecording || countdown !== null) return;
+    setCountdown(3);
+  };
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown === 0) {
+      setCountdown(null);
+      beginRecording();
+      return;
+    }
+    const t = setTimeout(() => setCountdown(c => (c === null ? null : c - 1)), 1000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countdown, stream]);
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
@@ -298,11 +391,22 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                 </div>
                 <div className="p-4 flex justify-end gap-3">
                     <Button variant="ghost" onClick={() => setRecordedVideoUrl(null)}>Descartar</Button>
-                    <a href={recordedVideoUrl} download={`proprompter-recording-${Date.now()}.webm`}>
+                    <a href={recordedVideoUrl} download={`proprompter-recording-${Date.now()}.${recordedExt}`}>
                         <Button icon={<Download size={16}/>}>Descargar Video</Button>
                     </a>
                 </div>
             </div>
+        </div>
+      )}
+
+      {/* Recording Countdown Overlay */}
+      {countdown !== null && (
+        <div
+          className="absolute inset-0 z-[55] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 cursor-pointer"
+          onClick={() => setCountdown(null)}
+        >
+          <span className="text-white font-bold text-[9rem] leading-none drop-shadow-lg">{countdown}</span>
+          <span className="text-slate-300 text-sm uppercase tracking-widest">Toca para cancelar</span>
         </div>
       )}
 
@@ -338,11 +442,11 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                     {/* Recording Button */}
                     {settings.useCamera && (
                         <button
-                            onClick={isRecording ? stopRecording : startRecording}
-                            className={`p-4 rounded-full transition-all shadow-lg flex items-center justify-center ${isRecording ? 'bg-red-600 hover:bg-red-700 animate-pulse' : 'bg-slate-800 hover:bg-red-900/50 text-red-500'}`}
-                            title={isRecording ? "Detener Grabación" : "Grabar Video"}
+                            onClick={countdown !== null ? () => setCountdown(null) : isRecording ? stopRecording : startRecording}
+                            className={`p-4 rounded-full transition-all shadow-lg flex items-center justify-center ${isRecording || countdown !== null ? 'bg-red-600 hover:bg-red-700 animate-pulse' : 'bg-slate-800 hover:bg-red-900/50 text-red-500'}`}
+                            title={countdown !== null ? "Cancelar" : isRecording ? "Detener Grabación" : "Grabar Video"}
                         >
-                            {isRecording ? <StopCircle size={24} fill="currentColor" className="text-white" /> : <Video size={24} />}
+                            {isRecording || countdown !== null ? <StopCircle size={24} fill="currentColor" className="text-white" /> : <Video size={24} />}
                         </button>
                     )}
                 </div>
@@ -400,41 +504,83 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                     </div>
                 </div>
 
-                {/* Toggles 1 */}
+                {/* Margin */}
+                <div className="space-y-2">
+                    <div className="flex justify-between text-xs text-slate-400 font-medium">
+                        <span>Margen</span>
+                        <span>{settings.margin}%</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="0"
+                        max="40"
+                        value={settings.margin}
+                        onChange={(e) => updateSettings({...settings, margin: parseInt(e.target.value)})}
+                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    />
+                </div>
+
+                {/* Toggles */}
                 <div className="flex items-center justify-between gap-2">
-                    <button 
+                    <button
                         onClick={() => updateSettings({...settings, isMirroredX: !settings.isMirroredX})}
                         className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.isMirroredX ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
                     >
                         <Settings size={14} />
                         Espejo X
                     </button>
-                    <button 
+                    <button
                         onClick={() => updateSettings({...settings, isMirroredY: !settings.isMirroredY})}
                         className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.isMirroredY ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
                     >
                         <Settings size={14} className="rotate-90" />
                         Espejo Y
                     </button>
-                </div>
-
-                 {/* Toggles 2 */}
-                 <div className="flex items-center justify-between gap-2">
-                    <button 
+                    <button
                         onClick={() => updateSettings({...settings, useCamera: !settings.useCamera})}
                         className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.useCamera ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
                     >
                         <Monitor size={14} />
                         Cámara
                     </button>
-                     <button
-                        onClick={() => updateSettings({...settings, margin: settings.margin === 0 ? 20 : 0})}
-                         className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.margin > 0 ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
-                    >
-                        <Type size={14} />
-                        Margen
-                    </button>
                 </div>
+
+                {/* Opacity */}
+                <div className="space-y-2">
+                    <div className="flex justify-between text-xs text-slate-400 font-medium">
+                        <span>Opacidad</span>
+                        <span>{Math.round(settings.opacity * 100)}%</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="20"
+                        max="100"
+                        value={Math.round(settings.opacity * 100)}
+                        onChange={(e) => updateSettings({...settings, opacity: parseInt(e.target.value) / 100})}
+                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    />
+                </div>
+
+                {/* Line Height */}
+                <div className="space-y-2">
+                    <div className="flex justify-between text-xs text-slate-400 font-medium">
+                        <span>Interlineado</span>
+                        <span>{settings.lineHeight.toFixed(1)}</span>
+                    </div>
+                    <input
+                        type="range"
+                        min="10"
+                        max="25"
+                        value={Math.round(settings.lineHeight * 10)}
+                        onChange={(e) => updateSettings({...settings, lineHeight: parseInt(e.target.value) / 10})}
+                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                    />
+                </div>
+            </div>
+
+            {/* Keyboard shortcuts hint (desktop / Bluetooth remotes) */}
+            <div className="hidden md:block text-center text-xs text-slate-500 pt-1">
+                Espacio: Play/Pausa · ↑↓ Velocidad · ←→ Tamaño de letra · Re Pág: Reiniciar · Esc: Salir
             </div>
 
             {/* Device Selectors (visible when camera is on) */}

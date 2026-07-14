@@ -16,7 +16,9 @@ export interface PrompterSettings {
   videoDeviceId?: string; // selected camera (undefined = browser default)
 }
 
-export interface ScriptData {
+export interface SavedScript {
+  id: string;
   title: string;
   content: string;
+  updatedAt: number; // epoch ms
 }

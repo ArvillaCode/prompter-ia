@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #0f172a; /* Slate 900 */
+  color: #f8fafc; /* Slate 50 */
+  overflow: hidden; /* App handles scrolling */
+}
+
+/* Custom scrollbar for editor */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Dynamic viewport heights: dvh tracks the visible area on mobile
+   (address bar), with a vh fallback for older browsers */
+.h-screen-dvh { height: 100vh; height: 100dvh; }
+.min-h-screen-dvh { min-height: 100vh; min-height: 100dvh; }
+.h-45dvh { height: 45vh; height: 45dvh; }
+.h-100dvh { height: 100vh; height: 100dvh; }
+.max-h-70dvh { max-height: 70vh; max-height: 70dvh; }
+
+/* Hide scrollbar in the prompter scroll container */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

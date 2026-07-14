@@ -11,8 +11,9 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react()],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        // Only expose the key in local dev; production uses /api/generate
+        // (Vercel function) so the key never ships in the bundle
+        'process.env.API_KEY': JSON.stringify(mode === 'development' ? env.GEMINI_API_KEY : ''),
       },
       resolve: {
         alias: {
