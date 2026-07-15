@@ -59,7 +59,7 @@ const loadSavedSettings = (): PrompterSettings => {
   try {
     const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
     if (saved) {
-      return { ...DEFAULT_SETTINGS, ...JSON.parse(saved), useCamera: false };
+      return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
     }
   } catch {
     // Ignorar settings corruptos y usar los valores por defecto

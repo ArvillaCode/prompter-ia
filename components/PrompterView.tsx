@@ -220,7 +220,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
 
   // Recording Functions
   const beginRecording = () => {
-    if (!stream) return;
+    if (!stream || isRecording) return;
 
     // Prefer MP4 when the browser can mux it (better editor compatibility)
     const preferredTypes = ['video/mp4', 'video/webm;codecs=vp9,opus', 'video/webm'];
@@ -433,10 +433,10 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
       {countdown !== null && (
         <div
           className="absolute inset-0 z-[55] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-4 cursor-pointer"
-          onClick={() => setCountdown(null)}
+          onClick={() => { setCountdown(null); beginRecording(); }}
         >
           <span className="text-white font-bold text-[9rem] leading-none drop-shadow-lg">{countdown}</span>
-          <span className="text-slate-300 text-sm uppercase tracking-widest">Toca para cancelar</span>
+          <span className="text-slate-300 text-sm uppercase tracking-widest">Toca para empezar ahora</span>
         </div>
       )}
 
