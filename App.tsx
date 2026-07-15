@@ -28,7 +28,8 @@ const DEFAULT_SETTINGS: PrompterSettings = {
   useCamera: false,
   margin: 10,
   opacity: 1,
-  lineHeight: 1.5
+  lineHeight: 1.5,
+  facingMode: 'user'
 };
 
 const SCRIPTS_STORAGE_KEY = 'proprompter-scripts';

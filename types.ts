@@ -14,6 +14,7 @@ export interface PrompterSettings {
   lineHeight: number;
   audioDeviceId?: string; // selected microphone (undefined = browser default)
   videoDeviceId?: string; // selected camera (undefined = browser default)
+  facingMode?: 'user' | 'environment'; // 'user' = front camera, 'environment' = back/main camera
 }
 
 export interface SavedScript {

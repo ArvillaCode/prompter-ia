@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { PrompterSettings } from '../types';
-import { ArrowLeft, Play, Pause, RefreshCw, Settings, Monitor, Video, StopCircle, Download, X, AlertCircle, Minus, Plus, Mic, Camera, Maximize, Minimize, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, Play, Pause, RefreshCw, Settings, Monitor, Video, StopCircle, Download, X, AlertCircle, Minus, Plus, Mic, Camera, Maximize, Minimize, ChevronDown, ChevronUp, SwitchCamera } from 'lucide-react';
 import { Button } from './Button';
 
 interface PrompterViewProps {
@@ -156,7 +156,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
         setCameraError(null);
         // Request audio as well for recording, honoring the selected devices
         const constraints: MediaStreamConstraints = {
-          video: settings.videoDeviceId ? { deviceId: { exact: settings.videoDeviceId } } : true,
+          video: settings.videoDeviceId ? { deviceId: { exact: settings.videoDeviceId } } : { facingMode: settings.facingMode ?? 'user' },
           audio: settings.audioDeviceId ? { deviceId: { exact: settings.audioDeviceId } } : true,
         };
 
@@ -166,11 +166,11 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
         } catch (err) {
           // Saved device no longer exists: fall back to defaults and clear the selection
           const name = (err as DOMException)?.name;
-          const hadSelection = settings.audioDeviceId || settings.videoDeviceId;
+          const hadSelection = settings.audioDeviceId || settings.videoDeviceId || settings.facingMode;
           if (hadSelection && (name === 'OverconstrainedError' || name === 'NotFoundError')) {
             newStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             if (!cancelled) {
-              updateSettings(prev => ({ ...prev, audioDeviceId: undefined, videoDeviceId: undefined }));
+              updateSettings(prev => ({ ...prev, audioDeviceId: undefined, videoDeviceId: undefined, facingMode: undefined }));
             }
           } else {
             throw err;
@@ -207,7 +207,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
       localStream?.getTracks().forEach(track => track.stop());
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.useCamera, settings.audioDeviceId, settings.videoDeviceId]);
+  }, [settings.useCamera, settings.audioDeviceId, settings.videoDeviceId, settings.facingMode]);
 
   // Recording Functions
   const beginRecording = () => {
@@ -408,7 +408,6 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                         src={recordedVideoUrl} 
                         controls 
                         className="h-full w-full object-contain" 
-                        style={{ transform: 'scaleX(-1)' }} // Mirror playback to match recording experience
                     />
                 </div>
                 <div className="p-4 flex justify-end gap-3">
@@ -452,11 +451,14 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                     </button>
 
                     <button
-                        onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                        className={`p-3 rounded-full transition-colors ${isSettingsOpen ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'}`}
-                        title="Ajustes de Teleprónter"
+                        onClick={() => {
+                            if (isRecording) stopRecording();
+                            updateSettings(prev => ({ ...prev, videoDeviceId: undefined, facingMode: prev.facingMode === 'environment' ? 'user' : 'environment' }));
+                        }}
+                        className="p-3 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        title={settings.facingMode === 'environment' ? "Cámara frontal" : "Cámara principal"}
                     >
-                        <Settings size={20} />
+                        <SwitchCamera size={20} />
                     </button>
 
                     <button
