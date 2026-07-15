@@ -154,9 +154,18 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
     const initCamera = async () => {
       try {
         setCameraError(null);
-        // Request audio as well for recording, honoring the selected devices
+        // Request the highest quality the device supports (ideal lets the browser
+        // pick the closest available resolution/framerate without failing)
+        const videoConstraints: MediaTrackConstraints = {
+          width: { ideal: 3840 },
+          height: { ideal: 2160 },
+          frameRate: { ideal: 60 },
+          ...(settings.videoDeviceId
+            ? { deviceId: { exact: settings.videoDeviceId } }
+            : { facingMode: settings.facingMode ?? 'user' }),
+        };
         const constraints: MediaStreamConstraints = {
-          video: settings.videoDeviceId ? { deviceId: { exact: settings.videoDeviceId } } : { facingMode: settings.facingMode ?? 'user' },
+          video: videoConstraints,
           audio: settings.audioDeviceId ? { deviceId: { exact: settings.audioDeviceId } } : true,
         };
 
