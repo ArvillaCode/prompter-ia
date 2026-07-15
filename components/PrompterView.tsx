@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { PrompterSettings } from '../types';
-import { ArrowLeft, Play, Pause, RefreshCw, Settings, Monitor, Video, StopCircle, Download, X, AlertCircle, Minus, Plus, Mic, Camera } from 'lucide-react';
+import { ArrowLeft, Play, Pause, RefreshCw, Settings, Monitor, Video, StopCircle, Download, X, AlertCircle, Minus, Plus, Mic, Camera, Maximize, Minimize, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from './Button';
 
 interface PrompterViewProps {
@@ -14,6 +14,8 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const animationFrameRef = useRef<number | null>(null);
   const lastScrollTime = useRef<number>(0);
   // Float scroll position accumulator: mobile browsers round scrollTop to
@@ -125,6 +127,20 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const toggleFullscreen = async () => {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen().catch(err => console.error(err));
+    } else {
+      await document.exitFullscreen().catch(err => console.error(err));
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
   // Initialize Camera
   useEffect(() => {
     if (!settings.useCamera) {
@@ -226,6 +242,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
   // Pressing record starts a 3-2-1 countdown before actually recording
   const startRecording = () => {
     if (!stream || isRecording || countdown !== null) return;
+    setShowControls(false); // Hide controls immediately when recording starts
     setCountdown(3);
   };
 
@@ -295,6 +312,8 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
     const handleMouseMove = () => {
+      // During recording or countdown: keep controls hidden (use floating stop button)
+      if (isRecording || countdown !== null) return;
       setShowControls(true);
       clearTimeout(timeout);
       timeout = setTimeout(() => {
@@ -310,7 +329,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
       window.removeEventListener('touchstart', handleMouseMove);
       clearTimeout(timeout);
     };
-  }, [isPlaying]);
+  }, [isPlaying, isRecording, countdown]);
 
   // Text styling transformations
   const textTransformStyle = {
@@ -425,6 +444,30 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
 
                 <div className="flex items-center gap-4 md:gap-6">
                     <button
+                        onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                        className={`p-3 rounded-full transition-colors ${isSettingsOpen ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        title={isSettingsOpen ? "Minimizar parámetros" : "Mostrar parámetros"}
+                    >
+                        {isSettingsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </button>
+
+                    <button
+                        onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                        className={`p-3 rounded-full transition-colors ${isSettingsOpen ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        title="Ajustes de Teleprónter"
+                    >
+                        <Settings size={20} />
+                    </button>
+
+                    <button
+                        onClick={toggleFullscreen}
+                        className="p-3 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+                    >
+                        {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                    </button>
+
+                    <button
                         onClick={() => {
                             if (scrollRef.current) scrollRef.current.scrollTop = 0;
                             scrollPosRef.current = 0;
@@ -458,21 +501,39 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
             </div>
 
             {/* Advanced Settings Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 pt-3 md:pt-4 border-t border-slate-800/50">
+            {isSettingsOpen && (
+              <>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 pt-3 md:pt-4 border-t border-slate-800/50">
                 {/* Speed */}
                 <div className="space-y-2">
                     <div className="flex justify-between text-xs text-slate-400 font-medium">
                         <span>Velocidad</span>
                         <span>{settings.scrollSpeed}%</span>
                     </div>
-                    <input 
-                        type="range" 
-                        min="0" 
-                        max="100" 
-                        value={settings.scrollSpeed} 
-                        onChange={(e) => updateSettings({...settings, scrollSpeed: parseInt(e.target.value)})}
-                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                    />
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => updateSettings({...settings, scrollSpeed: Math.max(0, settings.scrollSpeed - 5)})}
+                            className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                            aria-label="Reducir velocidad"
+                        >
+                            <Minus size={18} />
+                        </button>
+                        <input 
+                            type="range" 
+                            min="0" 
+                            max="100" 
+                            value={settings.scrollSpeed} 
+                            onChange={(e) => updateSettings({...settings, scrollSpeed: parseInt(e.target.value)})}
+                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        />
+                        <button
+                            onClick={() => updateSettings({...settings, scrollSpeed: Math.min(100, settings.scrollSpeed + 5)})}
+                            className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                            aria-label="Aumentar velocidad"
+                        >
+                            <Plus size={18} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Font Size */}
@@ -625,10 +686,24 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                             ))}
                         </select>
                     </div>
-                </div>
+                    </div>
+                )}
+              </>
             )}
         </div>
       </div>
+
+      {/* Floating Stop Button — visible only during active recording */}
+      {isRecording && (
+        <button
+          onClick={stopRecording}
+          className="absolute top-4 right-4 z-[58] flex items-center gap-2 px-4 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg animate-pulse transition-colors"
+          title="Detener Grabación"
+        >
+          <StopCircle size={24} fill="currentColor" />
+          <span className="text-sm font-medium hidden sm:inline">Detener</span>
+        </button>
+      )}
     </div>
   );
 };
