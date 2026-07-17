@@ -1,7 +1,14 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { PrompterSettings } from '../types';
-import { ArrowLeft, Play, Pause, RefreshCw, Settings, Monitor, Video, StopCircle, Download, X, AlertCircle, Minus, Plus, Mic, Camera, Maximize, Minimize, ChevronDown, ChevronUp, SwitchCamera } from 'lucide-react';
+import { ArrowLeft, Play, Pause, RefreshCw, Settings, Monitor, Video, StopCircle, Download, X, AlertCircle, Minus, Plus, Mic, Camera, Maximize, Minimize, ChevronDown, ChevronUp, SwitchCamera, Trash2 } from 'lucide-react';
 import { Button } from './Button';
+
+interface Recording {
+  id: string;
+  url: string;
+  ext: 'mp4' | 'webm';
+  createdAt: number;
+}
 
 interface PrompterViewProps {
   script: string;
@@ -10,7 +17,7 @@ interface PrompterViewProps {
   onExit: () => void;
 }
 
-export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, updateSettings, onExit }) => {
+export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, settings, updateSettings, onExit }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -27,14 +34,21 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
-  const [recordedVideoUrl, setRecordedVideoUrl] = useState<string | null>(null);
-  const [recordedExt, setRecordedExt] = useState<'mp4' | 'webm'>('webm');
+  const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
+  const recordingsRef = useRef<Recording[]>([]);
+  useEffect(() => { recordingsRef.current = recordings; }, [recordings]);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   const isRecordingRef = useRef(false);
   useEffect(() => { isRecordingRef.current = isRecording; }, [isRecording]);
+
+  // Revoke any remaining object URLs when leaving the prompter
+  useEffect(() => {
+    return () => recordingsRef.current.forEach(r => URL.revokeObjectURL(r.url));
+  }, []);
 
   // Available input devices (labels are only populated after permission is granted)
   const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
@@ -157,9 +171,9 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
         // Request the highest quality the device supports (ideal lets the browser
         // pick the closest available resolution/framerate without failing)
         const videoConstraints: MediaTrackConstraints = {
-          width: { ideal: 3840 },
-          height: { ideal: 2160 },
-          frameRate: { ideal: 60 },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 30 },
           ...(settings.videoDeviceId
             ? { deviceId: { exact: settings.videoDeviceId } }
             : { facingMode: settings.facingMode ?? 'user' }),
@@ -239,18 +253,29 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
         const type = mimeType || 'video/webm';
         const blob = new Blob(chunksRef.current, { type });
         const url = URL.createObjectURL(blob);
-        setRecordedExt(type.includes('mp4') ? 'mp4' : 'webm');
-        setRecordedVideoUrl(url);
+        const rec: Recording = {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+            url,
+            ext: type.includes('mp4') ? 'mp4' : 'webm',
+            createdAt: Date.now(),
+        };
+        setRecordings(prev => {
+            const next = [rec, ...prev].slice(0, 5);
+            // Revoke object URLs for recordings that fell out of the last-5 window
+            prev.slice(next.length).forEach(r => URL.revokeObjectURL(r.url));
+            return next;
+        });
+        setShowPreview(true);
     };
 
     mediaRecorder.start();
     setIsRecording(true);
-    setIsPlaying(true); // Start scrolling along with the recording
   };
 
   // Pressing record starts a 3-2-1 countdown before actually recording
   const startRecording = () => {
     if (!stream || isRecording || countdown !== null) return;
+    setShowPreview(false);
     setShowControls(false); // Hide controls immediately when recording starts
     setCountdown(3);
   };
@@ -340,14 +365,12 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
     };
   }, [isPlaying, isRecording, countdown]);
 
-  // Text styling transformations
-  const textTransformStyle = {
+  const textTransformStyle = React.useMemo(() => ({
     transform: `scale(${settings.isMirroredX ? -1 : 1}, ${settings.isMirroredY ? -1 : 1})`,
     fontSize: `${settings.fontSize}px`,
     lineHeight: settings.lineHeight,
-    opacity: settings.opacity,
     maxWidth: `${100 - settings.margin * 2}%`,
-  };
+  }), [settings.isMirroredX, settings.isMirroredY, settings.fontSize, settings.lineHeight, settings.margin]);
 
   return (
     <div className="relative w-full h-screen-dvh bg-black overflow-hidden">
@@ -358,25 +381,30 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
           autoPlay
           playsInline
           className="absolute inset-0 w-full h-full object-cover z-0 opacity-80"
-          style={{ transform: 'scaleX(-1)' }} // Mirror webcam so it feels natural
+          style={{ transform: 'scaleX(-1)', willChange: 'transform' }}
         />
       )}
+
+      {/* Single scrim layer dims the camera for text readability */}
+      <div className="absolute inset-0 z-[5] bg-black pointer-events-none" style={{ opacity: settings.opacity * 0.5 }} />
 
       {/* Scrolling Text Layer */}
       <div 
         ref={scrollRef}
         className="absolute inset-0 z-10 overflow-y-auto no-scrollbar flex justify-center"
-        style={{ scrollBehavior: 'auto' }} // Important: 'auto' prevents smooth scrolling interference with JS
+        style={{ scrollBehavior: 'auto', contain: 'layout style paint' }}
       >
         {/* Spacer to start text in middle */}
         <div className="w-full min-h-screen-dvh flex flex-col items-center">
             <div className="h-45dvh flex-shrink-0 w-full"></div>
             
-            <div 
-                className={`font-bold text-white text-center whitespace-pre-wrap drop-shadow-md px-4 transition-all duration-200`}
-                style={textTransformStyle}
-            >
-            {script}
+            <div className="relative w-full">
+                <div 
+                    className="relative font-bold text-white text-center whitespace-pre-wrap drop-shadow-md px-4"
+                    style={textTransformStyle}
+                >
+                {script}
+                </div>
             </div>
             
             <div className="h-100dvh flex-shrink-0 w-full"></div>
@@ -402,28 +430,55 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
         </div>
       </div>
 
-      {/* Video Preview Modal */}
-      {recordedVideoUrl && (
-        <div className="absolute inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6">
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-full flex flex-col shadow-2xl">
-                <div className="p-4 border-b border-slate-700 flex justify-between items-center">
-                    <h3 className="text-white font-bold flex items-center gap-2"><Video className="w-5 h-5 text-indigo-500"/> Vista Previa de Grabación</h3>
-                    <button onClick={() => setRecordedVideoUrl(null)} className="text-slate-400 hover:text-white">
+      {/* Video Preview Modal — keeps the last 5 recordings */}
+      {showPreview && recordings.length > 0 && (
+        <div className="absolute inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
+            <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+                <div className="p-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0">
+                    <h3 className="text-white font-bold flex items-center gap-2">
+                        <Video className="w-5 h-5 text-indigo-500"/> Vista Previa de Grabación
+                        <span className="text-slate-500 text-sm font-normal">· {recordings.length} de 5</span>
+                    </h3>
+                    <button onClick={() => setShowPreview(false)} className="text-slate-400 hover:text-white">
                         <X size={24} />
                     </button>
                 </div>
-                <div className="p-4 bg-black aspect-video flex justify-center">
-                    <video 
-                        src={recordedVideoUrl} 
-                        controls 
-                        className="h-full w-full object-contain" 
-                    />
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+                    {recordings.map((r, i) => (
+                        <div key={r.id} className="bg-black rounded-xl border border-slate-800 overflow-hidden">
+                            <div className="aspect-video flex justify-center bg-black">
+                                <video src={r.url} controls className="h-full w-full object-contain" />
+                            </div>
+                            <div className="p-3 flex justify-between items-center gap-3">
+                                <span className="text-xs text-slate-400">
+                                    Toma {recordings.length - i} · {new Date(r.createdAt).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <a href={r.url} download={`proprompter-recording-${r.createdAt}.${r.ext}`}>
+                                        <Button icon={<Download size={16}/>} className="h-9">Descargar</Button>
+                                    </a>
+                                    <button
+                                        onClick={() => {
+                                            URL.revokeObjectURL(r.url);
+                                            setRecordings(prev => prev.filter(x => x.id !== r.id));
+                                        }}
+                                        className="p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors"
+                                        title="Eliminar toma"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-                <div className="p-4 flex justify-end gap-3">
-                    <Button variant="ghost" onClick={() => setRecordedVideoUrl(null)}>Descartar</Button>
-                    <a href={recordedVideoUrl} download={`proprompter-recording-${Date.now()}.${recordedExt}`}>
-                        <Button icon={<Download size={16}/>}>Descargar Video</Button>
-                    </a>
+                <div className="p-4 border-t border-slate-700 flex justify-between items-center flex-shrink-0">
+                    <Button variant="ghost" onClick={() => {
+                        recordings.forEach(r => URL.revokeObjectURL(r.url));
+                        setRecordings([]);
+                        setShowPreview(false);
+                    }}>Descartar todo</Button>
+                    <Button variant="secondary" onClick={() => setShowPreview(false)}>Cerrar</Button>
                 </div>
             </div>
         </div>
@@ -499,9 +554,13 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                     {/* Recording Button */}
                     {settings.useCamera && (
                         <button
+                            disabled={!stream}
                             onClick={countdown !== null ? () => setCountdown(null) : isRecording ? stopRecording : startRecording}
-                            className={`p-4 rounded-full transition-all shadow-lg flex items-center justify-center ${isRecording || countdown !== null ? 'bg-red-600 hover:bg-red-700 animate-pulse' : 'bg-slate-800 hover:bg-red-900/50 text-red-500'}`}
-                            title={countdown !== null ? "Cancelar" : isRecording ? "Detener Grabación" : "Grabar Video"}
+                            className={`p-4 rounded-full transition-all shadow-lg flex items-center justify-center ${
+                              !stream ? 'bg-slate-800/50 text-slate-600 cursor-not-allowed' :
+                              isRecording || countdown !== null ? 'bg-red-600 hover:bg-red-700 animate-pulse' : 'bg-slate-800 hover:bg-red-900/50 text-red-500'
+                            }`}
+                            title={!stream ? "Cámara no disponible" : countdown !== null ? "Cancelar" : isRecording ? "Detener Grabación" : "Grabar Video"}
                         >
                             {isRecording || countdown !== null ? <StopCircle size={24} fill="currentColor" className="text-white" /> : <Video size={24} />}
                         </button>
@@ -628,7 +687,7 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
                     </div>
                     <input
                         type="range"
-                        min="20"
+                        min="0"
                         max="100"
                         value={Math.round(settings.opacity * 100)}
                         onChange={(e) => updateSettings({...settings, opacity: parseInt(e.target.value) / 100})}
@@ -717,4 +776,4 @@ export const PrompterView: React.FC<PrompterViewProps> = ({ script, settings, up
       )}
     </div>
   );
-};
+});

@@ -23,3 +23,9 @@ export interface SavedScript {
   content: string;
   updatedAt: number; // epoch ms
 }
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  displayName: string | null;
+}

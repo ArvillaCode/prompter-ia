@@ -1,10 +1,16 @@
 import { GoogleGenAI } from '@google/genai';
+import { getAuthUserIdFromRequest } from './lib/auth';
 
 // Vercel serverless function: keeps the Gemini API key on the server.
 // Set GEMINI_API_KEY in the Vercel project settings (Environment Variables).
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  const userId = await getAuthUserIdFromRequest(req);
+  if (!userId) {
+    return res.status(401).json({ error: 'No autenticado.' });
   }
 
   const { topic, tone, audience } = req.body ?? {};
