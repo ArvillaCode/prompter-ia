@@ -24,8 +24,11 @@ export interface SavedScript {
   updatedAt: number; // epoch ms
 }
 
+export type UserRole = 'user' | 'admin';
+
 export interface AuthUser {
   id: string;
   email: string;
   displayName: string | null;
+  role: UserRole;
 }

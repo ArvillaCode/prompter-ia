@@ -2,11 +2,14 @@ import { compare } from 'bcryptjs';
 import { getDbClient } from '../db/client';
 import { signToken } from '../lib/auth';
 import { validateEmail, validatePassword } from '../lib/validate';
+import { applyRateLimit } from '../lib/rateLimit';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido.' });
   }
+
+  if (!applyRateLimit(req, res)) return;
 
   const { email, password } = req.body ?? {};
 
@@ -21,18 +24,16 @@ export default async function handler(req: any, res: any) {
   const db = getDbClient();
 
   const result = await db.execute({
-    sql: 'SELECT id, email, password_hash, display_name FROM users WHERE email_lower = ?',
+    sql: 'SELECT id, email, password_hash, display_name, role FROM users WHERE email_lower = ?',
     args: [emailLower],
   });
 
-  if (result.rows.length === 0) {
-    return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
-  }
-
   const user = result.rows[0] as any;
-  const passwordMatch = await compare(password as string, user.password_hash);
+  // Always run bcrypt compare (even when user doesn't exist) to prevent timing attacks
+  const passwordHash = user?.password_hash ?? '$2a$10$000000000000000000000000000000000000000000000'; // dummy hash
+  const passwordMatch = user ? await compare(password as string, passwordHash) : false;
 
-  if (!passwordMatch) {
+  if (!user || !passwordMatch) {
     return res.status(401).json({ error: 'Correo o contraseña incorrectos.' });
   }
 
@@ -44,6 +45,7 @@ export default async function handler(req: any, res: any) {
       id: user.id,
       email: user.email,
       displayName: user.display_name || null,
+      role: user.role || 'user',
     },
   });
 }

@@ -1,10 +1,13 @@
 import { getDbClient } from '../db/client';
 import { getAuthUserIdFromRequest } from '../lib/auth';
+import { applyRateLimit } from '../lib/rateLimit';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Método no permitido.' });
   }
+
+  if (!applyRateLimit(req, res)) return;
 
   const userId = await getAuthUserIdFromRequest(req);
   if (!userId) {
@@ -13,7 +16,7 @@ export default async function handler(req: any, res: any) {
 
   const db = getDbClient();
   const result = await db.execute({
-    sql: 'SELECT id, email, display_name FROM users WHERE id = ?',
+    sql: 'SELECT id, email, display_name, role FROM users WHERE id = ?',
     args: [userId],
   });
 
@@ -27,6 +30,7 @@ export default async function handler(req: any, res: any) {
       id: user.id,
       email: user.email,
       displayName: user.display_name || null,
+      role: user.role || 'user',
     },
   });
 }

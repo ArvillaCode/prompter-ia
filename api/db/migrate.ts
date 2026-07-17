@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getDbClient } from './client';
@@ -25,16 +25,22 @@ try {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function migrate() {
-  const sqlPath = resolve(__dirname, 'migrations', '001_initial.sql');
-  const sql = readFileSync(sqlPath, 'utf8');
+  const migrationsDir = resolve(__dirname, 'migrations');
+  const files = readdirSync(migrationsDir)
+    .filter(f => f.endsWith('.sql'))
+    .sort();
 
   const db = getDbClient();
-  console.log('Running migration 001_initial.sql...');
 
-  // libSQL client supports executing multiple statements
-  await db.executeMultiple(sql);
+  for (const file of files) {
+    const sqlPath = resolve(migrationsDir, file);
+    const sql = readFileSync(sqlPath, 'utf8');
+    console.log(`Running ${file}...`);
+    await db.executeMultiple(sql);
+    console.log(`  ${file} completed.`);
+  }
 
-  console.log('Migration completed successfully.');
+  console.log('All migrations completed successfully.');
 }
 
 migrate().catch((err) => {

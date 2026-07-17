@@ -1,8 +1,11 @@
 import { getDbClient } from '../db/client';
 import { getAuthUserIdFromRequest } from '../lib/auth';
 import { validateScriptContent, validateScriptTitle } from '../lib/validate';
+import { applyRateLimit } from '../lib/rateLimit';
 
 export default async function handler(req: any, res: any) {
+  if (!applyRateLimit(req, res)) return;
+
   const userId = await getAuthUserIdFromRequest(req);
   if (!userId) {
     return res.status(401).json({ error: 'No autenticado.' });

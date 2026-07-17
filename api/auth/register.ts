@@ -1,12 +1,15 @@
 import { hash } from 'bcryptjs';
 import { getDbClient } from '../db/client';
 import { signToken } from '../lib/auth';
-import { validateEmail, validatePassword } from '../lib/validate';
+import { validateEmail, validatePassword, validateDisplayName, sanitizeDisplayName } from '../lib/validate';
+import { applyRateLimit } from '../lib/rateLimit';
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido.' });
   }
+
+  if (!applyRateLimit(req, res)) return;
 
   const { email, password, displayName } = req.body ?? {};
 
@@ -16,8 +19,12 @@ export default async function handler(req: any, res: any) {
   const passwordError = validatePassword(password);
   if (passwordError) return res.status(400).json({ error: passwordError });
 
+  const nameError = validateDisplayName(displayName);
+  if (nameError) return res.status(400).json({ error: nameError });
+
   const normalizedEmail = (email as string).trim();
   const emailLower = normalizedEmail.toLowerCase();
+  const safeDisplayName = sanitizeDisplayName(displayName);
 
   const db = getDbClient();
 
@@ -35,8 +42,8 @@ export default async function handler(req: any, res: any) {
   const id = crypto.randomUUID();
 
   await db.execute({
-    sql: 'INSERT INTO users (id, email, email_lower, password_hash, display_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    args: [id, normalizedEmail, emailLower, passwordHash, (displayName as string)?.trim() || null, now, now],
+    sql: 'INSERT INTO users (id, email, email_lower, password_hash, display_name, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    args: [id, normalizedEmail, emailLower, passwordHash, safeDisplayName, 'user', now, now],
   });
 
   const token = await signToken({ userId: id, email: normalizedEmail });
@@ -46,7 +53,8 @@ export default async function handler(req: any, res: any) {
     user: {
       id,
       email: normalizedEmail,
-      displayName: (displayName as string)?.trim() || null,
+      displayName: safeDisplayName,
+      role: 'user',
     },
   });
 }

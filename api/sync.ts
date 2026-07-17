@@ -1,6 +1,7 @@
 import { getDbClient } from './db/client';
 import { getAuthUserIdFromRequest } from './lib/auth';
-import { validateSettings } from './lib/validate';
+import { validateSettings, validateScriptTitle, validateScriptContent } from './lib/validate';
+import { applyRateLimit } from './lib/rateLimit';
 
 interface SyncRequest {
   scripts: Array<{
@@ -17,6 +18,8 @@ export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Método no permitido.' });
   }
+
+  if (!applyRateLimit(req, res)) return;
 
   const userId = await getAuthUserIdFromRequest(req);
   if (!userId) {
@@ -43,6 +46,11 @@ export default async function handler(req: any, res: any) {
 
   // 2. Upsert client scripts (if client updatedAt >= server updatedAt)
   for (const clientScript of clientScripts ?? []) {
+    const titleError = validateScriptTitle(clientScript.title);
+    if (titleError) continue;
+    const contentError = validateScriptContent(clientScript.content);
+    if (contentError) continue;
+
     const serverScript = serverScriptsMap.get(clientScript.id);
     if (!serverScript) {
       // New script from client - insert
