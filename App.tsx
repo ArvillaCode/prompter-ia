@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppMode } from './types';
+import { AppMode, SavedScript } from './types';
 import { PrompterView } from './components/PrompterView';
 import { AIGeneratorModal } from './components/AIGeneratorModal';
 import { ScriptLibraryModal } from './components/ScriptLibraryModal';
@@ -30,13 +30,13 @@ export default function App() {
   const activeScript = scripts.find(s => s.id === activeId) ?? scripts[0];
   const script = activeScript?.content ?? '';
 
-  const updateActive = (patch: Partial<Pick<import('./types').SavedScript, 'title' | 'content'>>) => {
+  const updateActive = (patch: Partial<Pick<SavedScript, 'title' | 'content'>>) => {
     if (!activeScript) return;
     setScripts(prev => prev.map(s => (s.id === activeScript.id ? { ...s, ...patch, updatedAt: Date.now() } : s)));
   };
 
   const handleNewScript = () => {
-    const fresh: import('./types').SavedScript = {
+    const fresh: SavedScript = {
       id: crypto.randomUUID(),
       title: 'Guion sin título',
       content: '',
@@ -50,7 +50,7 @@ export default function App() {
   const handleDuplicateScript = (id: string) => {
     const source = scripts.find(s => s.id === id);
     if (!source) return;
-    const copy: import('./types').SavedScript = {
+    const copy: SavedScript = {
       ...source,
       id: crypto.randomUUID(),
       title: `${source.title} (copia)`,
@@ -63,7 +63,7 @@ export default function App() {
     setScripts(prev => {
       const remaining = prev.filter(s => s.id !== id);
       if (remaining.length === 0) {
-        const fresh: import('./types').SavedScript = {
+        const fresh: SavedScript = {
           id: crypto.randomUUID(),
           title: 'Guion sin título',
           content: '',

@@ -1,6 +1,6 @@
-import { getDbClient } from '../../db/client';
-import { getAuthUserIdFromRequest } from '../../lib/auth';
-import { validateScriptContent, validateScriptTitle } from '../../lib/validate';
+import { getDbClient } from '../db/client';
+import { getAuthUserIdFromRequest } from '../lib/auth';
+import { validateScriptContent, validateScriptTitle } from '../lib/validate';
 
 export default async function handler(req: any, res: any) {
   const userId = await getAuthUserIdFromRequest(req);

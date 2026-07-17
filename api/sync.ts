@@ -1,6 +1,6 @@
-import { getDbClient } from '../db/client';
-import { getAuthUserIdFromRequest } from '../lib/auth';
-import { validateSettings } from '../lib/validate';
+import { getDbClient } from './db/client';
+import { getAuthUserIdFromRequest } from './lib/auth';
+import { validateSettings } from './lib/validate';
 
 interface SyncRequest {
   scripts: Array<{

@@ -121,17 +121,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [settings, user]);
 
-  const setScripts = useCallback((updater: any) => {
-    setScriptsState(updater);
-  }, []);
-
-  const setActiveId = useCallback((id: string) => {
-    setActiveIdState(id);
-  }, []);
-
-  const setSettings = useCallback((updater: any) => {
-    setSettingsState(updater);
-  }, []);
+  const setScripts = setScriptsState;
+  const setActiveId = setActiveIdState;
+  const setSettings = setSettingsState;
 
   const forceSync = useCallback(async () => {
     if (!user) return;

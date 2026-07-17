@@ -1,8 +1,0 @@
-{
-  "name": "ProPrompter AI",
-  "description": "A professional web-based teleprompter with AI script generation and webcam overlay capabilities.",
-  "requestFramePermissions": [
-    "camera",
-    "microphone"
-  ]
-}

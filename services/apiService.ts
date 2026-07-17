@@ -71,33 +71,11 @@ export const authApi = {
 // --- Scripts ---
 export const scriptsApi = {
   list: () => apiFetch<{ scripts: SavedScript[] }>('/api/scripts'),
-
-  create: (script: SavedScript) =>
-    apiFetch<{ script: SavedScript }>('/api/scripts', {
-      method: 'POST',
-      body: JSON.stringify(script),
-    }),
-
-  update: (id: string, script: Omit<SavedScript, 'id'>) =>
-    apiFetch<{ script: SavedScript }>(`/api/scripts/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(script),
-    }),
-
-  delete: (id: string) =>
-    apiFetch<{ success: boolean; id: string }>(`/api/scripts/${id}`, {
-      method: 'DELETE',
-    }),
 };
 
 // --- Settings ---
 export const settingsApi = {
   get: () => apiFetch<{ settings: PrompterSettings | null }>('/api/settings'),
-  update: (settings: PrompterSettings) =>
-    apiFetch<{ settings: PrompterSettings }>('/api/settings', {
-      method: 'PUT',
-      body: JSON.stringify({ settings }),
-    }),
 };
 
 // --- Sync ---
