@@ -244,9 +244,9 @@ export default function App() {
     return (
       <AdminLayout>
         <Routes>
-          <Route index element={<AdminDashboard />} />
-          <Route path="users" element={<UsersList />} />
-          <Route path="users/:id" element={<UserDetail />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<UsersList />} />
+          <Route path="/admin/users/:id" element={<UserDetail />} />
         </Routes>
       </AdminLayout>
     );
