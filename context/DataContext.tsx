@@ -77,6 +77,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   // --- Debounced cloud sync when scripts or settings change ---
+  const lastSyncAtRef = useRef(lastSyncAt);
+  useEffect(() => {
+    lastSyncAtRef.current = lastSyncAt;
+  }, [lastSyncAt]);
+
   const scheduleSync = useCallback(() => {
     if (!user) return;
     if (syncTimer.current) clearTimeout(syncTimer.current);
@@ -86,7 +91,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const res = await syncApi.sync({
           scripts,
           settings,
-          lastSyncAt: lastSyncAt,
+          lastSyncAt: lastSyncAtRef.current,
         });
         setLastSyncAt(res.syncTimestamp);
         setSyncStatus('idle');
@@ -94,7 +99,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setSyncStatus('error');
       }
     }, 1000);
-  }, [user, scripts, settings, lastSyncAt]);
+  }, [user, scripts, settings]);
 
   useEffect(() => {
     if (isFirstLoad.current) {

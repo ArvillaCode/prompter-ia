@@ -39,8 +39,10 @@ function getClientIp(req: Request): string {
 
 export function rateLimit(req: Request, res: Response, next: NextFunction): void {
   const ip = getClientIp(req);
-  const config = getConfig(req.path);
-  const key = `${ip}:${req.path}`;
+  // Express routers strip the mount prefix from req.path. Use req.baseUrl + req.path to resolve the full route (e.g., /api/sync)
+  const fullPath = req.baseUrl + req.path;
+  const config = getConfig(fullPath);
+  const key = `${ip}:${fullPath}`;
   const now = Date.now();
   let entry = store.get(key);
 
