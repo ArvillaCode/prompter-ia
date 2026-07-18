@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AppMode, SavedScript } from './types';
 import { PrompterView } from './components/PrompterView';
 import { AIGeneratorModal } from './components/AIGeneratorModal';
 import { ScriptLibraryModal } from './components/ScriptLibraryModal';
 import { Button } from './components/Button';
+import { LoginScreen } from './components/LoginScreen';
+import { AdminLayout } from './components/admin/AdminLayout';
+import { UsersList } from './components/admin/UsersList';
+import { UserDetail } from './components/admin/UserDetail';
+import { AdminDashboard } from './components/admin/AdminDashboard';
 import { useAuth } from './context/AuthContext';
 import { useData } from './context/DataContext';
-import { LogOut, Play, Sparkles, Mic, FileText, Type } from 'lucide-react';
+import { LogOut, Play, Sparkles, Mic, FileText, Type, Shield } from 'lucide-react';
 
 const DEFAULT_SCRIPT = `Bienvenido a ProPrompter AI.
 
@@ -20,9 +26,10 @@ Puedes ajustar la velocidad, el tamaño de la fuente y las opciones de espejo en
 
 ¡Buena suerte con tu grabación!`;
 
-export default function App() {
+function EditorPage() {
   const { user, logout } = useAuth();
   const { scripts, activeId, settings, setScripts, setActiveId, setSettings } = useData();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<AppMode>(AppMode.EDITOR);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
@@ -101,6 +108,8 @@ export default function App() {
     );
   }
 
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col">
       <AIGeneratorModal
@@ -119,7 +128,6 @@ export default function App() {
         onDelete={handleDeleteScript}
       />
 
-      {/* Header */}
       <header className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -132,6 +140,15 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-sm text-slate-400">{user?.email}</span>
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/admin')}
+                icon={<Shield className="w-4 h-4" />}
+              >
+                <span className="hidden sm:inline">Admin</span>
+              </Button>
+            )}
             <Button
               variant="ghost"
               onClick={logout}
@@ -143,10 +160,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Editor Area */}
       <main className="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
-
-        {/* Toolbar */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center gap-4 justify-between">
           <input
             value={activeScript?.title ?? ''}
@@ -167,24 +181,11 @@ export default function App() {
           </div>
 
           <div className="flex gap-2 sm:hidden">
-            <Button
-              variant="secondary"
-              onClick={() => setIsLibraryOpen(true)}
-              className="text-xs px-3 py-1 h-8"
-            >
-              Guiones
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => setIsAIModalOpen(true)}
-              className="text-xs px-3 py-1 h-8"
-            >
-              IA
-            </Button>
+            <Button variant="secondary" onClick={() => setIsLibraryOpen(true)} className="text-xs px-3 py-1 h-8">Guiones</Button>
+            <Button variant="secondary" onClick={() => setIsAIModalOpen(true)} className="text-xs px-3 py-1 h-8">IA</Button>
           </div>
         </div>
 
-        {/* Text Area */}
         <div className="flex-1 relative group">
           <textarea
             value={script}
@@ -195,7 +196,6 @@ export default function App() {
           />
         </div>
 
-        {/* Action buttons */}
         <div className="flex flex-wrap gap-3 justify-center">
           <Button
             variant="secondary"
@@ -224,4 +224,35 @@ export default function App() {
       </main>
     </div>
   );
+}
+
+export default function App() {
+  const { user, isLoading } = useAuth();
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (isAdminRoute) {
+    if (!user) return <LoginScreen />;
+    return (
+      <AdminLayout>
+        <Routes>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<UsersList />} />
+          <Route path="users/:id" element={<UserDetail />} />
+        </Routes>
+      </AdminLayout>
+    );
+  }
+
+  if (!user) return <LoginScreen />;
+
+  return <EditorPage />;
 }

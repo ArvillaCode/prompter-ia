@@ -24,11 +24,13 @@ export interface SavedScript {
   updatedAt: number; // epoch ms
 }
 
-export type UserRole = 'user' | 'admin';
+export type UserRole = 'user' | 'admin' | 'superadmin';
+export type UserPlan = 'free' | 'pro' | 'team';
 
 export interface AuthUser {
   id: string;
   email: string;
   displayName: string | null;
   role: UserRole;
+  plan?: UserPlan;
 }
