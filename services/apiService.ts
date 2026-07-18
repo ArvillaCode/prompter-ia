@@ -82,6 +82,7 @@ export const settingsApi = {
 export interface ApiKeyStatus {
   hasKey: boolean;
   last4: string | null;
+  invalid?: boolean;
 }
 
 export const apiKeyApi = {

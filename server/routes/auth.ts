@@ -62,27 +62,31 @@ router.post('/register', rateLimit, async (req: Request, res: Response) => {
   const id = crypto.randomUUID();
   const expiresAt = now + Number(license.duration_days) * DAY_MS;
 
-  // Reclamo atómico: solo un registro puede consumir la licencia.
-  const claim = await db.execute({
-    sql: "UPDATE licenses SET status = 'used', used_by = ?, activated_at = ?, expires_at = ? WHERE id = ? AND status = 'available'",
-    args: [id, now, expiresAt, license.id],
-  });
-  if (claim.rowsAffected === 0) {
-    res.status(409).json({ error: 'Esta licencia acaba de ser utilizada por otra persona.' }); return;
-  }
-
+  // Transacción: consumir la licencia y crear el usuario es todo-o-nada.
+  // Si el proceso muere a mitad, el rollback implícito evita licencias
+  // "quemadas" apuntando a usuarios que nunca se crearon.
+  const tx = await db.transaction('write');
   try {
-    await db.execute({
+    const claim = await tx.execute({
+      sql: "UPDATE licenses SET status = 'used', used_by = ?, activated_at = ?, expires_at = ? WHERE id = ? AND status = 'available'",
+      args: [id, now, expiresAt, license.id],
+    });
+    if (claim.rowsAffected === 0) {
+      await tx.rollback();
+      res.status(409).json({ error: 'Esta licencia acaba de ser utilizada por otra persona.' }); return;
+    }
+    await tx.execute({
       sql: 'INSERT INTO users (id, email, email_lower, password_hash, display_name, role, license_id, license_expires_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       args: [id, normalizedEmail, emailLower, passwordHash, safeDisplayName, 'user', license.id, expiresAt, now, now],
     });
-  } catch (err) {
-    // Compensación: si el usuario no se pudo crear, liberar la licencia.
-    await db.execute({
-      sql: "UPDATE licenses SET status = 'available', used_by = NULL, activated_at = NULL, expires_at = NULL WHERE id = ?",
-      args: [license.id],
-    });
+    await tx.commit();
+  } catch (err: any) {
+    if (String(err?.message || '').includes('UNIQUE')) {
+      res.status(409).json({ error: 'Este correo ya está registrado.' }); return;
+    }
     throw err;
+  } finally {
+    tx.close();
   }
 
   const token = await signToken({ userId: id, email: normalizedEmail });

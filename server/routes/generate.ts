@@ -57,14 +57,12 @@ router.post('/', rateLimit, requireAuth, async (req: Request, res: Response) => 
   const isPrivileged = user.role === 'admin' || user.role === 'superadmin';
 
   // Si el usuario configuró su propia API key, se usa esa (sin consumir
-  // cuota del plan). Si no, se usa la key del servidor bajo las reglas del plan.
-  let ownKey: string | null = null;
-  if (user.gemini_api_key_enc) {
-    ownKey = decryptApiKey(user.gemini_api_key_enc);
-    if (!ownKey) {
-      res.status(400).json({ error: 'Tu API key guardada no se pudo leer. Vuelve a configurarla en tu perfil.' }); return;
-    }
-  }
+  // cuota del plan). Si no — o si la guardada ya no se puede descifrar
+  // (p. ej. rotación del secreto) — se usa la key del servidor bajo las
+  // reglas del plan; el estado ilegible se reporta en GET /api/settings/apikey.
+  const ownKey: string | null = user.gemini_api_key_enc
+    ? decryptApiKey(user.gemini_api_key_enc)
+    : null;
 
   const usesOwnKey = ownKey !== null;
   const limit = Number(user.ai_generations_limit) || 0;

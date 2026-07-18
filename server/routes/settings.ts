@@ -20,12 +20,15 @@ router.get('/apikey', async (req: Request, res: Response) => {
   });
   const enc = (result.rows[0] as any)?.gemini_api_key_enc;
   if (!enc) {
-    res.status(200).json({ hasKey: false, last4: null }); return;
+    res.status(200).json({ hasKey: false, last4: null, invalid: false }); return;
   }
   const plain = decryptApiKey(enc);
+  // invalid=true: hay una key guardada pero ya no se puede descifrar
+  // (p. ej. se rotó el secreto de cifrado) — el usuario debe borrarla o reemplazarla.
   res.status(200).json({
-    hasKey: plain !== null,
+    hasKey: true,
     last4: plain ? plain.slice(-4) : null,
+    invalid: plain === null,
   });
 });
 

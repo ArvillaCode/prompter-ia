@@ -293,18 +293,25 @@ router.post('/users/:id/assign-license', requireSuperadmin, async (req: Request,
   const now = Date.now();
   const expiresAt = now + Number(license.duration_days) * DAY_MS;
 
-  const claim = await db.execute({
-    sql: "UPDATE licenses SET status = 'used', used_by = ?, activated_at = ?, expires_at = ? WHERE id = ? AND status = 'available'",
-    args: [userId, now, expiresAt, license.id],
-  });
-  if (claim.rowsAffected === 0) {
-    res.status(409).json({ error: 'Esta licencia acaba de ser utilizada.' }); return;
+  // Transacción: reclamar la licencia y actualizar al usuario es todo-o-nada.
+  const tx = await db.transaction('write');
+  try {
+    const claim = await tx.execute({
+      sql: "UPDATE licenses SET status = 'used', used_by = ?, activated_at = ?, expires_at = ? WHERE id = ? AND status = 'available'",
+      args: [userId, now, expiresAt, license.id],
+    });
+    if (claim.rowsAffected === 0) {
+      await tx.rollback();
+      res.status(409).json({ error: 'Esta licencia acaba de ser utilizada.' }); return;
+    }
+    await tx.execute({
+      sql: 'UPDATE users SET license_id = ?, license_expires_at = ?, updated_at = ? WHERE id = ?',
+      args: [license.id, expiresAt, now, userId],
+    });
+    await tx.commit();
+  } finally {
+    tx.close();
   }
-
-  await db.execute({
-    sql: 'UPDATE users SET license_id = ?, license_expires_at = ?, updated_at = ? WHERE id = ?',
-    args: [license.id, expiresAt, now, userId],
-  });
 
   res.status(200).json({ success: true, licenseExpiresAt: expiresAt });
 });

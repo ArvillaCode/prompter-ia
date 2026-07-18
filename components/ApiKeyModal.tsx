@@ -11,6 +11,7 @@ interface ApiKeyModalProps {
 export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => {
   const [hasKey, setHasKey] = useState(false);
   const [last4, setLast4] = useState<string | null>(null);
+  const [invalid, setInvalid] = useState(false);
   const [newKey, setNewKey] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -24,7 +25,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => 
     setSuccess(null);
     setNewKey('');
     apiKeyApi.get()
-      .then(data => { setHasKey(data.hasKey); setLast4(data.last4); setLoading(false); })
+      .then(data => { setHasKey(data.hasKey); setLast4(data.last4); setInvalid(data.invalid ?? false); setLoading(false); })
       .catch(err => { setError(err.message); setLoading(false); });
   }, [isOpen]);
 
@@ -42,6 +43,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => 
       const data = await apiKeyApi.save(newKey.trim());
       setHasKey(data.hasKey);
       setLast4(data.last4);
+      setInvalid(false);
       setNewKey('');
       setSuccess('API key guardada. Tus generaciones con IA ahora usan tu propia key, sin límite del plan.');
     } catch (err: any) {
@@ -60,6 +62,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => 
       await apiKeyApi.remove();
       setHasKey(false);
       setLast4(null);
+      setInvalid(false);
       setSuccess('API key eliminada.');
     } catch (err: any) {
       setError(err.message);
@@ -106,7 +109,11 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => 
               <div className="text-sm">
                 <span className="text-upf-slate">Estado: </span>
                 {hasKey ? (
-                  <span className="text-emerald-400 font-medium">Configurada (••••{last4})</span>
+                  invalid ? (
+                    <span className="text-amber-400 font-medium">Guardada pero ilegible — elimínala o guarda una nueva</span>
+                  ) : (
+                    <span className="text-emerald-400 font-medium">Configurada (••••{last4})</span>
+                  )
                 ) : (
                   <span className="text-upf-slate">Sin configurar</span>
                 )}
