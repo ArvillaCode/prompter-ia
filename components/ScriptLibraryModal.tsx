@@ -30,9 +30,9 @@ export const ScriptLibraryModal: React.FC<ScriptLibraryModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
       <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[85vh] flex flex-col">
         <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center text-indigo-400">
+          <div className="flex items-center text-upf-cyan">
             <FolderOpen className="w-6 h-6 mr-2" />
-            <h2 className="text-xl font-bold text-white">Mis Guiones</h2>
+            <h2 className="text-xl font-bold text-white">Biblioteca de Guiones</h2>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white">
             <X className="w-6 h-6" />
@@ -50,11 +50,11 @@ export const ScriptLibraryModal: React.FC<ScriptLibraryModalProps> = ({
               onClick={() => { onSelect(s.id); onClose(); }}
               className={`group p-3 rounded-xl border cursor-pointer transition-colors flex items-center gap-3 ${
                 s.id === activeId
-                  ? 'bg-indigo-600/10 border-indigo-600/50'
+                  ? 'bg-upf-cyan/10 border-upf-cyan/50'
                   : 'bg-slate-800/50 border-slate-700/50 hover:border-slate-600'
               }`}
             >
-              <FileText className={`w-5 h-5 flex-shrink-0 ${s.id === activeId ? 'text-indigo-400' : 'text-slate-500'}`} />
+              <FileText className={`w-5 h-5 flex-shrink-0 ${s.id === activeId ? 'text-upf-cyan' : 'text-slate-500'}`} />
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-white truncate">{s.title || 'Sin título'}</div>
                 <div className="text-xs text-slate-500">

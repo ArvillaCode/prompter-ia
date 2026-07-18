@@ -55,14 +55,14 @@ export const UsersList: React.FC = () => {
             placeholder="Buscar por email o nombre..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2 text-white placeholder-slate-600 outline-none focus:ring-2 focus:ring-amber-500/50"
+            className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2 text-white placeholder-slate-600 outline-none focus:ring-2 focus:ring-upf-cyan/50"
           />
         </div>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full" />
+          <div className="animate-spin w-8 h-8 border-2 border-upf-cyan border-t-transparent rounded-full" />
         </div>
       ) : (
         <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
@@ -100,7 +100,7 @@ export const UsersList: React.FC = () => {
                       <td className="px-4 py-3 capitalize hidden md:table-cell">
                         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                           u.plan === 'pro' || u.plan === 'team'
-                            ? 'bg-indigo-600/20 text-indigo-400'
+                            ? 'bg-upf-cyan/20 text-upf-cyan'
                             : 'bg-slate-700/50 text-slate-400'
                         }`}>
                           {u.plan}

@@ -16,12 +16,12 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col bg-grid">
       <header className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-red-600 rounded-lg flex items-center justify-center">
-              <Shield className="text-white w-4 h-4" />
+            <div className="w-8 h-8 bg-upf-cyan rounded-lg flex items-center justify-center shadow-lg shadow-upf-cyan/30">
+              <Shield className="text-upf-black w-4 h-4" />
             </div>
             <h1 className="text-lg font-bold">Admin Panel</h1>
           </div>
@@ -45,7 +45,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
               onClick={() => navigate(tab.path)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 location.pathname === tab.path
-                  ? 'border-amber-500 text-amber-400'
+                  ? 'border-upf-cyan text-upf-cyan'
                   : 'border-transparent text-slate-400 hover:text-white'
               }`}
             >

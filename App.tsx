@@ -135,8 +135,11 @@ function EditorPage() {
       <header className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Mic className="text-white w-4 h-4" />
+            <div className="relative">
+              <div className="w-8 h-8 bg-upf-cyan rounded-lg flex items-center justify-center shadow-lg shadow-upf-cyan/30">
+                <Mic className="text-upf-black w-4 h-4" />
+              </div>
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-upf-cyan rounded-full animate-pulse-cyan border border-upf-black" />
             </div>
             <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
               ProPrompter AI
@@ -172,13 +175,13 @@ function EditorPage() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 flex flex-col gap-6 bg-grid">
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-wrap items-center gap-4 justify-between">
           <input
             value={activeScript?.title ?? ''}
             onChange={(e) => updateActive({ title: e.target.value })}
             placeholder="Título del guion..."
-            className="flex-1 min-w-[180px] bg-transparent text-base font-semibold text-white placeholder-slate-600 outline-none border-b border-transparent focus:border-indigo-500/50 transition-colors pb-0.5"
+            className="flex-1 min-w-[180px] bg-transparent text-base font-semibold text-white placeholder-slate-600 outline-none border-b border-transparent focus:border-upf-cyan/50 transition-colors pb-0.5"
           />
           <div className="flex items-center gap-4 text-sm text-slate-400">
             <div className="flex items-center gap-2">
@@ -193,7 +196,7 @@ function EditorPage() {
           </div>
 
           <div className="flex gap-2 sm:hidden">
-            <Button variant="secondary" onClick={() => setIsLibraryOpen(true)} className="text-xs px-3 py-1 h-8">Guiones</Button>
+            <Button variant="secondary" onClick={() => setIsLibraryOpen(true)} className="text-xs px-3 py-1 h-8">Biblioteca</Button>
             <Button variant="secondary" onClick={() => setIsAIModalOpen(true)} className="text-xs px-3 py-1 h-8">IA</Button>
           </div>
         </div>
@@ -203,7 +206,7 @@ function EditorPage() {
             value={script}
             onChange={(e) => updateActive({ content: e.target.value })}
             placeholder="Escribe tu guion aquí, o usa la IA para generar uno..."
-            className="w-full h-full min-h-[500px] bg-slate-900/50 border border-slate-800 rounded-2xl p-8 text-lg leading-relaxed text-slate-100 focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all outline-none resize-none"
+            className="w-full h-full min-h-[500px] bg-upf-black/50 border border-slate-800 rounded-2xl p-8 text-lg leading-relaxed text-slate-100 focus:ring-2 focus:ring-upf-cyan/50 focus:border-upf-cyan transition-all outline-none resize-none"
             spellCheck={false}
           />
         </div>
@@ -215,22 +218,22 @@ function EditorPage() {
             icon={<FileText className="w-4 h-4" />}
             className="hidden sm:flex"
           >
-            Mis Guiones
+            Biblioteca
           </Button>
           <Button
             variant="secondary"
             onClick={() => setIsAIModalOpen(true)}
-            icon={<Sparkles className="w-4 h-4 text-purple-400" />}
+            icon={<Sparkles className="w-4 h-4 text-upf-cyan" />}
             className="hidden sm:flex"
           >
-            Escritor IA
+            Generar con IA
           </Button>
           <Button
             onClick={() => setMode(AppMode.PROMPTER)}
             icon={<Play className="w-4 h-4 fill-current" />}
-            className="shadow-lg shadow-indigo-500/20"
+            className="shadow-lg shadow-upf-cyan/30 ring-1 ring-upf-cyan/20 hover:ring-upf-cyan/40"
           >
-            Iniciar Teleprónter
+            Abrir Teleprónter
           </Button>
         </div>
       </main>
@@ -246,7 +249,7 @@ export default function App() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-upf-cyan border-t-transparent rounded-full" />
       </div>
     );
   }

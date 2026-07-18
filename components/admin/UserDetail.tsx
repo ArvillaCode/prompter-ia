@@ -67,7 +67,7 @@ export const UserDetail: React.FC = () => {
   if (loading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="animate-spin w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-upf-cyan border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -85,7 +85,7 @@ export const UserDetail: React.FC = () => {
 
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
         <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-800">
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold">
+          <div className="w-14 h-14 rounded-full bg-upf-cyan flex items-center justify-center text-upf-black text-xl font-bold shadow-lg shadow-upf-cyan/30">
             {(user.displayName || user.email)[0].toUpperCase()}
           </div>
           <div>
@@ -107,7 +107,7 @@ export const UserDetail: React.FC = () => {
                   onClick={() => setRole(r)}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors capitalize ${
                     role === r
-                      ? 'bg-amber-600/20 text-amber-400 border-amber-600/50'
+                      ? 'bg-upf-cyan/20 text-upf-cyan border-upf-cyan/50'
                       : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
                   }`}
                 >
@@ -127,7 +127,7 @@ export const UserDetail: React.FC = () => {
                   onClick={() => setPlan(p)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors capitalize ${
                     plan === p
-                      ? 'bg-indigo-600/20 text-indigo-400 border-indigo-600/50'
+                      ? 'bg-upf-cyan/20 text-upf-cyan border-upf-cyan/50'
                       : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
                   }`}
                 >
@@ -189,7 +189,7 @@ export const UserDetail: React.FC = () => {
                     onChange={e => setLicenseCode(e.target.value.toUpperCase())}
                     placeholder="PP-XXXX-XXXX-XXXX (licencia disponible)"
                     spellCheck={false}
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2 text-white font-mono placeholder-slate-600 outline-none focus:ring-2 focus:ring-amber-500/50"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2 text-white font-mono placeholder-slate-600 outline-none focus:ring-2 focus:ring-upf-cyan/50"
                   />
                 </div>
                 <Button variant="secondary" onClick={handleAssignLicense} isLoading={assigning}>

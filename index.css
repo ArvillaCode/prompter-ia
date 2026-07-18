@@ -3,9 +3,9 @@
 @tailwind utilities;
 
 body {
-  background-color: #0f172a; /* Slate 900 */
-  color: #f8fafc; /* Slate 50 */
-  overflow: hidden; /* App handles scrolling */
+  background-color: #080C14; /* Jet Black (upf-black) */
+  color: #f8fafc;
+  overflow: hidden;
 }
 
 /* Custom scrollbar for editor */
@@ -13,14 +13,14 @@ body {
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: #080C14;
 }
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #94A3B8;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #CBD5E1;
 }
 
 /* Dynamic viewport heights: dvh tracks the visible area on mobile
@@ -34,3 +34,20 @@ body {
 /* Hide scrollbar in the prompter scroll container */
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Subtle grid pattern for broadcast-studio feel */
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Pulse animation for 'on air' indicator */
+@keyframes pulse-cyan {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse-cyan {
+  animation: pulse-cyan 1.5s ease-in-out infinite;
+}

@@ -436,7 +436,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
             <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl">
                 <div className="p-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0">
                     <h3 className="text-white font-bold flex items-center gap-2">
-                        <Video className="w-5 h-5 text-indigo-500"/> Vista Previa de Grabación
+                        <Video className="w-5 h-5 text-upf-cyan"/> Vista Previa de Grabación
                         <span className="text-slate-500 text-sm font-normal">· {recordings.length} de 5</span>
                     </h3>
                     <button onClick={() => setShowPreview(false)} className="text-slate-400 hover:text-white">
@@ -508,7 +508,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                 <div className="flex items-center gap-4 md:gap-6">
                     <button
                         onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                        className={`p-3 rounded-full transition-colors ${isSettingsOpen ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+                        className={`p-3 rounded-full transition-colors ${isSettingsOpen ? 'bg-upf-cyan text-upf-black' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'}`}
                         title={isSettingsOpen ? "Minimizar parámetros" : "Mostrar parámetros"}
                     >
                         {isSettingsOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -546,7 +546,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
 
                     <button 
                         onClick={() => setIsPlaying(!isPlaying)}
-                        className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 transition-transform ${isPlaying ? 'bg-slate-700 hover:bg-slate-600' : 'bg-indigo-600 hover:bg-indigo-500'}`}
+                        className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 transition-transform ${isPlaying ? 'bg-slate-700 hover:bg-slate-600' : 'bg-upf-cyan hover:bg-upf-cyan/90'}`}
                     >
                         {isPlaying ? <Pause fill="currentColor" /> : <Play fill="currentColor" className="ml-1" />}
                     </button>
@@ -594,7 +594,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                             max="100" 
                             value={settings.scrollSpeed} 
                             onChange={(e) => updateSettings({...settings, scrollSpeed: parseInt(e.target.value)})}
-                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-upf-cyan"
                         />
                         <button
                             onClick={() => updateSettings({...settings, scrollSpeed: Math.min(100, settings.scrollSpeed + 5)})}
@@ -626,7 +626,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                             max="120"
                             value={settings.fontSize}
                             onChange={(e) => updateSettings({...settings, fontSize: parseInt(e.target.value)})}
-                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-upf-cyan"
                         />
                         <button
                             onClick={() => updateSettings({...settings, fontSize: Math.min(120, settings.fontSize + 4)})}
@@ -650,7 +650,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                         max="40"
                         value={settings.margin}
                         onChange={(e) => updateSettings({...settings, margin: parseInt(e.target.value)})}
-                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-upf-cyan"
                     />
                 </div>
 
@@ -658,21 +658,21 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                 <div className="flex items-center justify-between gap-1 md:gap-2">
                     <button
                         onClick={() => updateSettings({...settings, isMirroredX: !settings.isMirroredX})}
-                        className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.isMirroredX ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
+                        className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.isMirroredX ? 'bg-upf-cyan/20 text-upf-cyan border border-upf-cyan/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
                     >
                         <Settings size={14} />
                         Espejo X
                     </button>
                     <button
                         onClick={() => updateSettings({...settings, isMirroredY: !settings.isMirroredY})}
-                        className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.isMirroredY ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
+                        className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.isMirroredY ? 'bg-upf-cyan/20 text-upf-cyan border border-upf-cyan/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
                     >
                         <Settings size={14} className="rotate-90" />
                         Espejo Y
                     </button>
                     <button
                         onClick={() => updateSettings({...settings, useCamera: !settings.useCamera})}
-                        className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.useCamera ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-600/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
+                        className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.useCamera ? 'bg-upf-cyan/20 text-upf-cyan border border-upf-cyan/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
                     >
                         <Monitor size={14} />
                         Cámara
@@ -691,7 +691,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                         max="100"
                         value={Math.round(settings.opacity * 100)}
                         onChange={(e) => updateSettings({...settings, opacity: parseInt(e.target.value) / 100})}
-                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-upf-cyan"
                     />
                 </div>
 
@@ -707,7 +707,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                         max="25"
                         value={Math.round(settings.lineHeight * 10)}
                         onChange={(e) => updateSettings({...settings, lineHeight: parseInt(e.target.value) / 10})}
-                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-upf-cyan"
                     />
                 </div>
             </div>

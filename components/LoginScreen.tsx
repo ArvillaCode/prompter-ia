@@ -56,12 +56,12 @@ export const LoginScreen: React.FC = () => {
   const displayError = localError || error;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center p-4 bg-grid">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/30">
-            <Mic className="text-white w-8 h-8" />
+          <div className="w-16 h-16 bg-upf-cyan rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-upf-cyan/30">
+            <Mic className="text-upf-black w-8 h-8" />
           </div>
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
             ProPrompter AI
@@ -77,7 +77,7 @@ export const LoginScreen: React.FC = () => {
             <button
               onClick={() => { setMode('login'); setLocalError(null); clearError(); }}
               className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                mode === 'login' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                mode === 'login' ? 'bg-upf-cyan text-upf-black' : 'text-slate-400 hover:text-white'
               }`}
             >
               Iniciar Sesión
@@ -85,7 +85,7 @@ export const LoginScreen: React.FC = () => {
             <button
               onClick={() => { setMode('register'); setLocalError(null); clearError(); }}
               className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
-                mode === 'register' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                mode === 'register' ? 'bg-upf-cyan text-upf-black' : 'text-slate-400 hover:text-white'
               }`}
             >
               Registrarse
@@ -104,7 +104,7 @@ export const LoginScreen: React.FC = () => {
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       placeholder="Tu nombre"
-                      className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2.5 text-white placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2.5 text-white placeholder-slate-600 focus:ring-2 focus:ring-upf-cyan focus:border-transparent outline-none transition-all"
                     />
                   </div>
                 </div>
@@ -120,7 +120,7 @@ export const LoginScreen: React.FC = () => {
                       required
                       autoCapitalize="characters"
                       spellCheck={false}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2.5 text-white font-mono tracking-wider placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2.5 text-white font-mono tracking-wider placeholder-slate-600 focus:ring-2 focus:ring-upf-cyan focus:border-transparent outline-none transition-all"
                     />
                   </div>
                   <p className="text-xs text-slate-500 mt-1.5">
@@ -140,7 +140,7 @@ export const LoginScreen: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="tu@correo.com"
                   required
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2.5 text-white placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2.5 text-white placeholder-slate-600 focus:ring-2 focus:ring-upf-cyan focus:border-transparent outline-none transition-all"
                 />
               </div>
             </div>
@@ -155,7 +155,7 @@ export const LoginScreen: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mínimo 8 caracteres"
                   required
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2.5 text-white placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                  className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2.5 text-white placeholder-slate-600 focus:ring-2 focus:ring-upf-cyan focus:border-transparent outline-none transition-all"
                 />
               </div>
             </div>
@@ -178,7 +178,7 @@ export const LoginScreen: React.FC = () => {
           </form>
 
           <div className="text-center mt-4">
-            <button onClick={switchMode} className="text-sm text-slate-500 hover:text-indigo-400 transition-colors">
+            <button onClick={switchMode} className="text-sm text-slate-500 hover:text-upf-cyan transition-colors">
               {mode === 'login' ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
             </button>
           </div>

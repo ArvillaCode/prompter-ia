@@ -23,16 +23,16 @@ export const AdminDashboard: React.FC = () => {
   if (!stats) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="animate-spin w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full" />
+        <div className="animate-spin w-8 h-8 border-2 border-upf-cyan border-t-transparent rounded-full" />
       </div>
     );
   }
 
   const cards = [
-    { label: 'Usuarios Totales', value: stats.totalUsers, icon: <Users className="w-8 h-8" />, color: 'from-blue-500 to-blue-700' },
+    { label: 'Usuarios Totales', value: stats.totalUsers, icon: <Users className="w-8 h-8" />, color: 'from-upf-cyan/80 to-upf-cyan/30' },
     { label: 'Usuarios Activos', value: stats.activeUsers, icon: <Activity className="w-8 h-8" />, color: 'from-emerald-500 to-emerald-700' },
-    { label: 'Guiones Creados', value: stats.totalScripts, icon: <FileText className="w-8 h-8" />, color: 'from-purple-500 to-purple-700' },
-    { label: 'Usuarios Pro', value: stats.proUsers, icon: <Crown className="w-8 h-8" />, color: 'from-amber-500 to-orange-700' },
+    { label: 'Guiones Creados', value: stats.totalScripts, icon: <FileText className="w-8 h-8" />, color: 'from-upf-cyan/60 to-upf-cyan/20' },
+    { label: 'Usuarios Pro', value: stats.proUsers, icon: <Crown className="w-8 h-8" />, color: 'from-upf-cyan to-upf-cyan/50' },
   ];
 
   return (

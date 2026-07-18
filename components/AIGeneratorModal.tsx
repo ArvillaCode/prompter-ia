@@ -65,7 +65,7 @@ export const AIGeneratorModal: React.FC<AIGeneratorModalProps> = ({ isOpen, onCl
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center text-upf-cyan">
             <Sparkles className="w-6 h-6 mr-2" />
-            <h2 className="text-xl font-bold text-white">Escritor IA</h2>
+            <h2 className="text-xl font-bold text-white">Generar con IA</h2>
           </div>
           <button onClick={onClose} className="text-upf-slate hover:text-white">
             <X className="w-6 h-6" />
