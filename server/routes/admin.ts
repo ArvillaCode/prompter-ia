@@ -174,10 +174,16 @@ function generateLicenseCode(): string {
   return `PP-${chars.slice(0, 4)}-${chars.slice(4, 8)}-${chars.slice(8, 12)}`;
 }
 
-function mapLicense(row: any) {
+const MASKED_LICENSE_CODE = 'PP-****-****-****';
+
+function mapLicense(row: any, canSeeCode: boolean) {
+  // Solo un código 'available' es una credencial usable — un admin sin
+  // permiso de superadmin no debe poder leerlo y usarlo/repartirlo, ya
+  // que crear/asignar licencias está restringido a requireSuperadmin.
+  const exposesCode = canSeeCode || row.status !== 'available';
   return {
     id: row.id,
-    code: row.code,
+    code: exposesCode ? row.code : MASKED_LICENSE_CODE,
     durationDays: Number(row.duration_days),
     status: row.status,
     createdAt: Number(row.created_at),
@@ -189,13 +195,14 @@ function mapLicense(row: any) {
 }
 
 router.get('/licenses', requireAdmin, async (req: Request, res: Response) => {
+  const role = await getCallerRole(req);
   const db = getDbClient();
   const result = await db.execute(
     `SELECT l.id, l.code, l.duration_days, l.status, l.created_at, l.activated_at, l.expires_at, l.used_by, u.email AS user_email
      FROM licenses l LEFT JOIN users u ON u.id = l.used_by
      ORDER BY l.created_at DESC`
   );
-  res.status(200).json({ licenses: result.rows.map(mapLicense) });
+  res.status(200).json({ licenses: result.rows.map(row => mapLicense(row, role === 'superadmin')) });
 });
 
 router.post('/licenses', requireSuperadmin, async (req: Request, res: Response) => {
