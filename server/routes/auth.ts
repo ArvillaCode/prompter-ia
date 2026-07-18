@@ -62,7 +62,7 @@ router.post('/login', rateLimit, async (req: Request, res: Response) => {
   const db = getDbClient();
 
   const result = await db.execute({
-    sql: 'SELECT id, email, password_hash, display_name, role FROM users WHERE email_lower = ?',
+    sql: 'SELECT id, email, password_hash, display_name, role, is_active FROM users WHERE email_lower = ?',
     args: [emailLower],
   });
 
@@ -73,6 +73,10 @@ router.post('/login', rateLimit, async (req: Request, res: Response) => {
 
   if (!user || !passwordMatch) {
     res.status(401).json({ error: 'Correo o contraseña incorrectos.' }); return;
+  }
+
+  if (user.is_active === 0) {
+    res.status(403).json({ error: 'Tu cuenta ha sido desactivada. Contacta al administrador.' }); return;
   }
 
   const token = await signToken({ userId: user.id, email: user.email });

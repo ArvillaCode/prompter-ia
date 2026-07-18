@@ -15,6 +15,11 @@ import adminRoutes from './routes/admin';
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
+// Detrás de un único reverse proxy (Traefik/Coolify). Necesario para que
+// req.ip resuelva la IP real del cliente en vez de la del proxy, y para
+// que el rate limiter no sea trivial de burlar falsificando X-Forwarded-For.
+app.set('trust proxy', 1);
+
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);

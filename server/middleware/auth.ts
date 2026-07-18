@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { SignJWT, jwtVerify } from 'jose';
+import { getDbClient } from '../db/client';
 
 const JWT_EXPIRY = '7d';
 const ALG = 'HS256';
@@ -57,6 +58,18 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     res.status(401).json({ error: 'Token inválido o expirado.' });
     return;
   }
+
+  const db = getDbClient();
+  const result = await db.execute({
+    sql: 'SELECT is_active FROM users WHERE id = ?',
+    args: [payload.userId],
+  });
+  const user = result.rows[0] as any;
+  if (!user || user.is_active === 0) {
+    res.status(401).json({ error: 'Esta cuenta fue desactivada.' });
+    return;
+  }
+
   req.userId = payload.userId;
   next();
 }

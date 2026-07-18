@@ -27,10 +27,18 @@ function getConfig(path: string) {
   return { windowMs: ONE_MINUTE, maxRequests: 60 };
 }
 
+function getClientIp(req: Request): string {
+  // Cloudflare sets this at its edge; it can't be spoofed by the client
+  // once the origin only accepts traffic from Cloudflare. Fall back to
+  // Express's own req.ip, which (with `trust proxy` set) is derived from
+  // the reverse proxy's own forwarding, not a raw client-supplied header.
+  const cfIp = req.headers['cf-connecting-ip'];
+  if (typeof cfIp === 'string' && cfIp.trim()) return cfIp.trim();
+  return req.ip || req.socket?.remoteAddress || 'unknown';
+}
+
 export function rateLimit(req: Request, res: Response, next: NextFunction): void {
-  const ip = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim()
-    || req.socket?.remoteAddress
-    || 'unknown';
+  const ip = getClientIp(req);
   const config = getConfig(req.path);
   const key = `${ip}:${req.path}`;
   const now = Date.now();
