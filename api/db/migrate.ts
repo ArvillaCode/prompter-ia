@@ -32,11 +32,27 @@ async function migrate() {
 
   const db = getDbClient();
 
+  await db.execute(`CREATE TABLE IF NOT EXISTS _migrations (
+    name       TEXT PRIMARY KEY,
+    applied_at INTEGER NOT NULL
+  )`);
+  const applied = new Set(
+    (await db.execute('SELECT name FROM _migrations')).rows.map(r => String(r.name))
+  );
+
   for (const file of files) {
+    if (applied.has(file)) {
+      console.log(`Skipping ${file} (already applied).`);
+      continue;
+    }
     const sqlPath = resolve(migrationsDir, file);
     const sql = readFileSync(sqlPath, 'utf8');
     console.log(`Running ${file}...`);
     await db.executeMultiple(sql);
+    await db.execute({
+      sql: 'INSERT INTO _migrations (name, applied_at) VALUES (?, ?)',
+      args: [file, Date.now()],
+    });
     console.log(`  ${file} completed.`);
   }
 

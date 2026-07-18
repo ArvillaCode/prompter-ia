@@ -19,4 +19,4 @@ COPY --from=build /app/tsconfig.json ./
 
 EXPOSE 3001
 
-CMD ["node", "--import", "tsx", "server/index.ts"]
+CMD ["sh", "-c", "node --import tsx api/db/migrate.ts && node --import tsx server/index.ts"]
