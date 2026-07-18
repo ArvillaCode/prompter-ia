@@ -15,6 +15,8 @@ RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/server ./server
 COPY --from=build /app/api ./api
+COPY --from=build /app/services ./services
+COPY --from=build /app/types.ts ./types.ts
 COPY --from=build /app/tsconfig.json ./
 
 EXPOSE 3001
