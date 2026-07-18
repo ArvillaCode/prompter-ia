@@ -53,10 +53,10 @@ interface AuthResponse {
 }
 
 export const authApi = {
-  register: (email: string, password: string, displayName?: string) =>
+  register: (email: string, password: string, licenseCode: string, displayName?: string) =>
     apiFetch<AuthResponse>('/api/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password, displayName }),
+      body: JSON.stringify({ email, password, licenseCode, displayName }),
     }),
 
   login: (email: string, password: string) =>
@@ -76,6 +76,22 @@ export const scriptsApi = {
 // --- Settings ---
 export const settingsApi = {
   get: () => apiFetch<{ settings: PrompterSettings | null }>('/api/settings'),
+};
+
+// --- API key de Gemini del usuario ---
+export interface ApiKeyStatus {
+  hasKey: boolean;
+  last4: string | null;
+}
+
+export const apiKeyApi = {
+  get: () => apiFetch<ApiKeyStatus>('/api/settings/apikey'),
+  save: (apiKey: string) =>
+    apiFetch<ApiKeyStatus>('/api/settings/apikey', {
+      method: 'PUT',
+      body: JSON.stringify({ apiKey }),
+    }),
+  remove: () => apiFetch<ApiKeyStatus>('/api/settings/apikey', { method: 'DELETE' }),
 };
 
 // --- Sync ---

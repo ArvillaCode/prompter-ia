@@ -29,6 +29,10 @@ app.use('/api/sync', syncRoutes);
 app.use('/api/generate', generateRoutes);
 app.use('/api/admin', adminRoutes);
 
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime() });
+});
+
 // Serve Vite-built static frontend in production
 const distPath = resolve(process.cwd(), 'dist');
 app.use(express.static(distPath));

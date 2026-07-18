@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './Button';
-import { Mic, Mail, Lock, User, AlertCircle, Sparkles } from 'lucide-react';
+import { Mic, Mail, Lock, User, AlertCircle, Sparkles, KeyRound } from 'lucide-react';
 
 export const LoginScreen: React.FC = () => {
   const { login, register, error, clearError } = useAuth();
@@ -9,6 +9,7 @@ export const LoginScreen: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [licenseCode, setLicenseCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -27,12 +28,17 @@ export const LoginScreen: React.FC = () => {
       return;
     }
 
+    if (mode === 'register' && !licenseCode.trim()) {
+      setLocalError('Necesitas un código de licencia para crear tu cuenta.');
+      return;
+    }
+
     setLoading(true);
     try {
       if (mode === 'login') {
         await login(email, password);
       } else {
-        await register(email, password, displayName || undefined);
+        await register(email, password, licenseCode.trim().toUpperCase(), displayName || undefined);
       }
     } catch {
       // Error already set in context
@@ -88,19 +94,40 @@ export const LoginScreen: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">Nombre (opcional)</label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="Tu nombre"
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2.5 text-white placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                  />
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Nombre (opcional)</label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input
+                      type="text"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="Tu nombre"
+                      className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2.5 text-white placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
                 </div>
-              </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-1.5">Código de licencia</label>
+                  <div className="relative">
+                    <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input
+                      type="text"
+                      value={licenseCode}
+                      onChange={(e) => setLicenseCode(e.target.value.toUpperCase())}
+                      placeholder="PP-XXXX-XXXX-XXXX"
+                      required
+                      autoCapitalize="characters"
+                      spellCheck={false}
+                      className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-3 py-2.5 text-white font-mono tracking-wider placeholder-slate-600 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1.5">
+                    Tu cuenta se activa con una licencia. Si no tienes una, solicítala al administrador.
+                  </p>
+                </div>
+              </>
             )}
 
             <div>

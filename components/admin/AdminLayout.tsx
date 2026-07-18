@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../Button';
-import { Shield, Users, BarChart3, ArrowLeft, LogOut } from 'lucide-react';
+import { Shield, Users, BarChart3, ArrowLeft, LogOut, KeyRound } from 'lucide-react';
 
 export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
@@ -12,6 +12,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   const tabs = [
     { path: '/admin', label: 'Dashboard', icon: <BarChart3 className="w-4 h-4" /> },
     { path: '/admin/users', label: 'Usuarios', icon: <Users className="w-4 h-4" /> },
+    { path: '/admin/licenses', label: 'Licencias', icon: <KeyRound className="w-4 h-4" /> },
   ];
 
   return (

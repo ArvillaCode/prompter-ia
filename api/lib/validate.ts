@@ -90,3 +90,31 @@ export function validateSettings(settings: unknown): string | null {
   }
   return null;
 }
+
+const LICENSE_CODE_REGEX = /^PP-[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/;
+
+export function normalizeLicenseCode(code: unknown): string {
+  if (typeof code !== 'string') return '';
+  return code.trim().toUpperCase();
+}
+
+export function validateLicenseCode(code: unknown): string | null {
+  const normalized = normalizeLicenseCode(code);
+  if (!normalized) return 'El código de licencia es requerido.';
+  if (!LICENSE_CODE_REGEX.test(normalized)) {
+    return 'El código de licencia no tiene un formato válido (PP-XXXX-XXXX-XXXX).';
+  }
+  return null;
+}
+
+const API_KEY_REGEX = /^[A-Za-z0-9_-]{20,200}$/;
+
+export function validateGeminiApiKey(apiKey: unknown): string | null {
+  if (typeof apiKey !== 'string') return 'La API key es requerida.';
+  const trimmed = apiKey.trim();
+  if (!trimmed) return 'La API key es requerida.';
+  if (!API_KEY_REGEX.test(trimmed)) {
+    return 'La API key no tiene un formato válido (sin espacios, 20-200 caracteres alfanuméricos).';
+  }
+  return null;
+}

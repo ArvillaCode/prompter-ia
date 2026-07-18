@@ -48,12 +48,30 @@ async function migrate() {
     const sqlPath = resolve(migrationsDir, file);
     const sql = readFileSync(sqlPath, 'utf8');
     console.log(`Running ${file}...`);
-    await db.executeMultiple(sql);
-    await db.execute({
-      sql: 'INSERT INTO _migrations (name, applied_at) VALUES (?, ?)',
-      args: [file, Date.now()],
-    });
-    console.log(`  ${file} completed.`);
+    try {
+      await db.executeMultiple(sql);
+      await db.execute({
+        sql: 'INSERT INTO _migrations (name, applied_at) VALUES (?, ?)',
+        args: [file, Date.now()],
+      });
+      console.log(`  ${file} completed.`);
+    } catch (err: any) {
+      const errMsg = err?.message || '';
+      const isAlreadyAppliedError = 
+        errMsg.includes('duplicate column name') || 
+        errMsg.includes('already exists');
+      
+      if (isAlreadyAppliedError) {
+        console.warn(`  Warning: Migration ${file} failed but looks like changes are already applied. Marking as applied. Error: ${errMsg}`);
+        await db.execute({
+          sql: 'INSERT INTO _migrations (name, applied_at) VALUES (?, ?)',
+          args: [file, Date.now()],
+        });
+        console.log(`  ${file} marked as completed.`);
+      } else {
+        throw err;
+      }
+    }
   }
 
   console.log('All migrations completed successfully.');

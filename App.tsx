@@ -10,9 +10,11 @@ import { AdminLayout } from './components/admin/AdminLayout';
 import { UsersList } from './components/admin/UsersList';
 import { UserDetail } from './components/admin/UserDetail';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { LicensesPanel } from './components/admin/LicensesPanel';
+import { ApiKeyModal } from './components/ApiKeyModal';
 import { useAuth } from './context/AuthContext';
 import { useData } from './context/DataContext';
-import { LogOut, Play, Sparkles, Mic, FileText, Type, Shield } from 'lucide-react';
+import { LogOut, Play, Sparkles, Mic, FileText, Type, Shield, KeyRound } from 'lucide-react';
 
 const DEFAULT_SCRIPT = `Bienvenido a ProPrompter AI.
 
@@ -33,6 +35,7 @@ function EditorPage() {
   const [mode, setMode] = useState<AppMode>(AppMode.EDITOR);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [isApiKeyOpen, setIsApiKeyOpen] = useState(false);
 
   const activeScript = scripts.find(s => s.id === activeId) ?? scripts[0];
   const script = activeScript?.content ?? '';
@@ -117,6 +120,7 @@ function EditorPage() {
         onClose={() => setIsAIModalOpen(false)}
         onScriptGenerated={(newScript) => updateActive({ content: newScript })}
       />
+      <ApiKeyModal isOpen={isApiKeyOpen} onClose={() => setIsApiKeyOpen(false)} />
       <ScriptLibraryModal
         isOpen={isLibraryOpen}
         scripts={scripts}
@@ -140,6 +144,14 @@ function EditorPage() {
           </div>
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-sm text-slate-400">{user?.email}</span>
+            <Button
+              variant="ghost"
+              onClick={() => setIsApiKeyOpen(true)}
+              icon={<KeyRound className="w-4 h-4" />}
+              title="Mi API Key de Gemini"
+            >
+              <span className="hidden sm:inline">API Key</span>
+            </Button>
             {isAdmin && (
               <Button
                 variant="ghost"
@@ -247,6 +259,7 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<UsersList />} />
           <Route path="/admin/users/:id" element={<UserDetail />} />
+          <Route path="/admin/licenses" element={<LicensesPanel />} />
         </Routes>
       </AdminLayout>
     );

@@ -74,6 +74,7 @@ export const UsersList: React.FC = () => {
                   <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Nombre</th>
                   <th className="text-left px-4 py-3 font-medium">Rol</th>
                   <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Plan</th>
+                  <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Licencia</th>
                   <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">
                     <button onClick={() => setSortAsc(!sortAsc)} className="flex items-center gap-1 hover:text-white">
                       Registro {sortAsc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -104,6 +105,23 @@ export const UsersList: React.FC = () => {
                         }`}>
                           {u.plan}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 hidden md:table-cell">
+                        {u.role !== 'user' ? (
+                          <span className="text-xs text-slate-500">N/A</span>
+                        ) : u.licenseExpiresAt ? (
+                          u.licenseExpiresAt > Date.now() ? (
+                            <span className="text-xs text-emerald-400">
+                              Vence {new Date(u.licenseExpiresAt).toLocaleDateString()}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-red-400">
+                              Venció {new Date(u.licenseExpiresAt).toLocaleDateString()}
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-xs text-amber-400">Sin licencia</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-slate-400 hidden lg:table-cell">
                         {new Date(u.createdAt).toLocaleDateString()}
@@ -144,7 +162,7 @@ export const UsersList: React.FC = () => {
                 })}
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-slate-500">
+                    <td colSpan={8} className="text-center py-12 text-slate-500">
                       No se encontraron usuarios
                     </td>
                   </tr>

@@ -33,4 +33,5 @@ export interface AuthUser {
   displayName: string | null;
   role: UserRole;
   plan?: UserPlan;
+  licenseExpiresAt?: number | null;
 }
