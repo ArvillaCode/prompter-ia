@@ -14,23 +14,11 @@ import { LicensesPanel } from './components/admin/LicensesPanel';
 import { ApiKeyModal } from './components/ApiKeyModal';
 import { useAuth } from './context/AuthContext';
 import { useData } from './context/DataContext';
-import { LogOut, Play, Sparkles, Mic, FileText, Type, Shield, KeyRound } from 'lucide-react';
-
-const DEFAULT_SCRIPT = `Bienvenido a ProPrompter AI.
-
-Este es un guion de demostración para mostrarte cómo funciona el teleprónter.
-
-Puedes editar este texto en la vista del editor, o usar nuestras herramientas de IA para generar un guion por ti.
-
-Haz clic en el botón "Play" para comenzar el desplazamiento.
-
-Puedes ajustar la velocidad, el tamaño de la fuente y las opciones de espejo en el panel de control inferior.
-
-¡Buena suerte con tu grabación!`;
+import { LogOut, Play, Sparkles, Mic, FileText, Type, Shield, KeyRound, AlertCircle, RefreshCw } from 'lucide-react';
 
 function EditorPage() {
   const { user, logout } = useAuth();
-  const { scripts, activeId, settings, setScripts, setActiveId, setSettings } = useData();
+  const { scripts, activeId, settings, setScripts, setActiveId, setSettings, isDataLoading, dataError, reloadData } = useData();
   const navigate = useNavigate();
   const [mode, setMode] = useState<AppMode>(AppMode.EDITOR);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
@@ -113,8 +101,34 @@ function EditorPage() {
 
   const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
 
+  // Show loading spinner while data is being fetched
+  if (isDataLoading) {
+    return (
+      <div className="min-h-screen-dvh bg-upf-black flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-upf-cyan border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // Show error with reload button if hydration failed
+  if (dataError) {
+    return (
+      <div className="min-h-screen-dvh bg-upf-black flex flex-col items-center justify-center gap-4 p-4">
+        <AlertCircle className="w-10 h-10 text-upf-cyan" />
+        <p className="text-upf-slate text-center max-w-md">{dataError}</p>
+        <button
+          onClick={reloadData}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-upf-cyan text-upf-black font-medium hover:bg-upf-cyan/90 transition-colors"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Reintentar
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col">
+    <div className="min-h-screen-dvh bg-upf-black text-slate-200 flex flex-col">
       <AIGeneratorModal
         isOpen={isAIModalOpen}
         onClose={() => setIsAIModalOpen(false)}
@@ -134,24 +148,24 @@ function EditorPage() {
 
       <header className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <div className="w-8 h-8 bg-upf-cyan rounded-lg flex items-center justify-center shadow-lg shadow-upf-cyan/30">
-                <Mic className="text-upf-black w-4 h-4" />
-              </div>
-              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-upf-cyan rounded-full animate-pulse-cyan border border-upf-black" />
-            </div>
-            <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+          <div className="flex items-center gap-3">
+            <img
+              src="/brand/upfunnel-logo-horizontal.png"
+              alt="Upfunnel"
+              className="h-7 sm:h-8"
+            />
+            <h1 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
               ProPrompter AI
             </h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <span className="hidden sm:block text-sm text-slate-400">{user?.email}</span>
             <Button
               variant="ghost"
               onClick={() => setIsApiKeyOpen(true)}
               icon={<KeyRound className="w-4 h-4" />}
               title="Mi API Key de Gemini"
+              className="px-2.5 sm:px-4"
             >
               <span className="hidden sm:inline">API Key</span>
             </Button>
@@ -160,6 +174,8 @@ function EditorPage() {
                 variant="ghost"
                 onClick={() => navigate('/admin')}
                 icon={<Shield className="w-4 h-4" />}
+                title="Panel de administración"
+                className="px-2.5 sm:px-4"
               >
                 <span className="hidden sm:inline">Admin</span>
               </Button>
@@ -168,6 +184,8 @@ function EditorPage() {
               variant="ghost"
               onClick={logout}
               icon={<LogOut className="w-4 h-4" />}
+              title="Cerrar sesión"
+              className="px-2.5 sm:px-4"
             >
               <span className="hidden sm:inline">Salir</span>
             </Button>
@@ -196,8 +214,8 @@ function EditorPage() {
           </div>
 
           <div className="flex gap-2 sm:hidden">
-            <Button variant="secondary" onClick={() => setIsLibraryOpen(true)} className="text-xs px-3 py-1 h-8">Biblioteca</Button>
-            <Button variant="secondary" onClick={() => setIsAIModalOpen(true)} className="text-xs px-3 py-1 h-8">IA</Button>
+            <Button variant="secondary" onClick={() => setIsLibraryOpen(true)} className="text-sm">Biblioteca</Button>
+            <Button variant="secondary" onClick={() => setIsAIModalOpen(true)} className="text-sm">IA</Button>
           </div>
         </div>
 
@@ -248,7 +266,7 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen-dvh bg-upf-black flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-upf-cyan border-t-transparent rounded-full" />
       </div>
     );

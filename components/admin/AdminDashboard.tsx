@@ -14,7 +14,7 @@ export const AdminDashboard: React.FC = () => {
 
   if (error) {
     return (
-      <div className="text-red-400 text-center py-12">
+      <div className="text-upf-cyan text-center py-12">
         Error al cargar estadísticas: {error}
       </div>
     );
@@ -30,7 +30,7 @@ export const AdminDashboard: React.FC = () => {
 
   const cards = [
     { label: 'Usuarios Totales', value: stats.totalUsers, icon: <Users className="w-8 h-8" />, color: 'from-upf-cyan/80 to-upf-cyan/30' },
-    { label: 'Usuarios Activos', value: stats.activeUsers, icon: <Activity className="w-8 h-8" />, color: 'from-emerald-500 to-emerald-700' },
+    { label: 'Usuarios Activos', value: stats.activeUsers, icon: <Activity className="w-8 h-8" />, color: 'from-upf-cyan/80 to-upf-cyan/30' },
     { label: 'Guiones Creados', value: stats.totalScripts, icon: <FileText className="w-8 h-8" />, color: 'from-upf-cyan/60 to-upf-cyan/20' },
     { label: 'Usuarios Pro', value: stats.proUsers, icon: <Crown className="w-8 h-8" />, color: 'from-upf-cyan to-upf-cyan/50' },
   ];

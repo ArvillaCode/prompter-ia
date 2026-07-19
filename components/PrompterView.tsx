@@ -373,7 +373,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
   }), [settings.isMirroredX, settings.isMirroredY, settings.fontSize, settings.lineHeight, settings.margin]);
 
   return (
-    <div className="relative w-full h-screen-dvh bg-black overflow-hidden">
+    <div className="fixed inset-0 h-screen-dvh bg-black overflow-hidden">
       {/* Background Video Layer */}
       {settings.useCamera && (
         <video
@@ -413,27 +413,27 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
 
       {/* Camera Error Banner */}
       {cameraError && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[70] flex items-center gap-2 text-red-400 text-sm bg-red-400/10 border border-red-400/30 backdrop-blur-sm px-4 py-3 rounded-lg shadow-lg max-w-[90%]">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[70] flex items-center gap-2 text-upf-cyan text-sm bg-upf-cyan/10 border border-upf-cyan/30 backdrop-blur-sm px-4 py-3 rounded-lg shadow-lg max-w-[90%]">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 text-upf-cyan" />
           <span>{cameraError}</span>
-          <button onClick={() => setCameraError(null)} className="ml-2 text-red-400/70 hover:text-red-300">
+          <button onClick={() => setCameraError(null)} className="ml-2 text-upf-cyan/70 hover:text-upf-cyan">
             <X size={16} />
           </button>
         </div>
       )}
 
       {/* Marker Guide (Eye Level) */}
-      <div className="absolute top-[45%] left-0 w-full h-20 flex items-center z-20 pointer-events-none opacity-30 border-y border-red-500/50 bg-red-500/5">
+      <div className="absolute top-[45%] left-0 w-full h-20 flex items-center z-20 pointer-events-none opacity-20 border-y border-upf-cyan/40 bg-upf-cyan/5">
         <div className="w-full flex justify-between px-4">
-            <div className="text-red-500 text-xs uppercase tracking-widest">Leer Aquí</div>
-            <div className="text-red-500 text-xs uppercase tracking-widest">Leer Aquí</div>
+            <div className="text-upf-cyan/60 text-xs uppercase tracking-widest">Leer Aquí</div>
+            <div className="text-upf-cyan/60 text-xs uppercase tracking-widest">Leer Aquí</div>
         </div>
       </div>
 
       {/* Video Preview Modal — keeps the last 5 recordings */}
       {showPreview && recordings.length > 0 && (
         <div className="absolute inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
-            <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+            <div className="bg-upf-black border border-upf-cyan/20 rounded-2xl max-w-4xl w-full max-h-90dvh flex flex-col shadow-2xl shadow-upf-cyan/10">
                 <div className="p-4 border-b border-slate-700 flex justify-between items-center flex-shrink-0">
                     <h3 className="text-white font-bold flex items-center gap-2">
                         <Video className="w-5 h-5 text-upf-cyan"/> Vista Previa de Grabación
@@ -455,14 +455,14 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                                 </span>
                                 <div className="flex items-center gap-2">
                                     <a href={r.url} download={`proprompter-recording-${r.createdAt}.${r.ext}`}>
-                                        <Button icon={<Download size={16}/>} className="h-9">Descargar</Button>
+                                        <Button icon={<Download size={16}/>} size="sm">Descargar</Button>
                                     </a>
                                     <button
                                         onClick={() => {
                                             URL.revokeObjectURL(r.url);
                                             setRecordings(prev => prev.filter(x => x.id !== r.id));
                                         }}
-                                        className="p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors"
+                                        className="p-2 rounded-lg text-slate-400 hover:text-upf-cyan hover:bg-slate-800 transition-colors"
                                         title="Eliminar toma"
                                     >
                                         <Trash2 size={18} />
@@ -496,16 +496,17 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
       )}
 
       {/* Controls Layer */}
-      <div className={`absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-slate-800 p-3 md:p-6 max-h-70dvh overflow-y-auto overscroll-contain transition-transform duration-300 z-50 ${showControls ? 'translate-y-0' : 'translate-y-full'}`}>
+      <div className={`absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-slate-800 p-3 md:p-6 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-[max(1.5rem,env(safe-area-inset-bottom))] max-h-70dvh overflow-y-auto overscroll-contain transition-transform duration-300 z-50 ${showControls ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="max-w-6xl mx-auto flex flex-col gap-3 md:gap-4">
             
-            {/* Main Transport */}
-            <div className="flex items-center justify-between">
-                <button onClick={onExit} className="text-slate-400 hover:text-white flex items-center gap-2">
+            {/* Main Transport: en móvil el grupo de controles baja a su propia
+                fila centrada (w-full + flex-wrap) para caber en 360px */}
+            <div className="flex flex-wrap items-center justify-between gap-y-2">
+                <button onClick={onExit} className="text-slate-400 hover:text-white flex items-center gap-2 p-2 -m-2 min-h-11">
                     <ArrowLeft size={20} /> <span className="hidden sm:inline">Volver al Editor</span>
                 </button>
 
-                <div className="flex items-center gap-4 md:gap-6">
+                <div className="flex w-full sm:w-auto items-center justify-center gap-2 sm:gap-4 md:gap-6">
                     <button
                         onClick={() => setIsSettingsOpen(!isSettingsOpen)}
                         className={`p-3 rounded-full transition-colors ${isSettingsOpen ? 'bg-upf-cyan text-upf-black' : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'}`}
@@ -546,7 +547,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
 
                     <button 
                         onClick={() => setIsPlaying(!isPlaying)}
-                        className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 transition-transform ${isPlaying ? 'bg-slate-700 hover:bg-slate-600' : 'bg-upf-cyan hover:bg-upf-cyan/90'}`}
+                        className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center text-white shadow-lg hover:scale-105 transition-transform ${isPlaying ? 'bg-slate-700 hover:bg-slate-600' : 'bg-upf-cyan hover:bg-upf-cyan/90'}`}
                     >
                         {isPlaying ? <Pause fill="currentColor" /> : <Play fill="currentColor" className="ml-1" />}
                     </button>
@@ -556,13 +557,13 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                         <button
                             disabled={!stream}
                             onClick={countdown !== null ? () => setCountdown(null) : isRecording ? stopRecording : startRecording}
-                            className={`p-4 rounded-full transition-all shadow-lg flex items-center justify-center ${
+                            className={`p-3 sm:p-4 rounded-full transition-all shadow-lg flex items-center justify-center ${
                               !stream ? 'bg-slate-800/50 text-slate-600 cursor-not-allowed' :
-                              isRecording || countdown !== null ? 'bg-red-600 hover:bg-red-700 animate-pulse' : 'bg-slate-800 hover:bg-red-900/50 text-red-500'
+                              isRecording || countdown !== null ? 'bg-upf-cyan hover:bg-upf-cyan/90 animate-pulse text-upf-black' : 'bg-slate-800 hover:bg-upf-cyan/20 text-upf-cyan'
                             }`}
                             title={!stream ? "Cámara no disponible" : countdown !== null ? "Cancelar" : isRecording ? "Detener Grabación" : "Grabar Video"}
                         >
-                            {isRecording || countdown !== null ? <StopCircle size={24} fill="currentColor" className="text-white" /> : <Video size={24} />}
+                            {isRecording || countdown !== null ? <StopCircle size={24} fill="currentColor" /> : <Video size={24} />}
                         </button>
                     )}
                 </div>
@@ -583,7 +584,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => updateSettings({...settings, scrollSpeed: Math.max(0, settings.scrollSpeed - 5)})}
-                            className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                            className="w-10 h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
                             aria-label="Reducir velocidad"
                         >
                             <Minus size={18} />
@@ -594,11 +595,11 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                             max="100" 
                             value={settings.scrollSpeed} 
                             onChange={(e) => updateSettings({...settings, scrollSpeed: parseInt(e.target.value)})}
-                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-upf-cyan"
+                            className="slider w-full"
                         />
                         <button
                             onClick={() => updateSettings({...settings, scrollSpeed: Math.min(100, settings.scrollSpeed + 5)})}
-                            className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                            className="w-10 h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
                             aria-label="Aumentar velocidad"
                         >
                             <Plus size={18} />
@@ -615,7 +616,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => updateSettings({...settings, fontSize: Math.max(24, settings.fontSize - 4)})}
-                            className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                            className="w-10 h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
                             aria-label="Reducir tamaño de letra"
                         >
                             <Minus size={18} />
@@ -626,11 +627,11 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                             max="120"
                             value={settings.fontSize}
                             onChange={(e) => updateSettings({...settings, fontSize: parseInt(e.target.value)})}
-                            className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-upf-cyan"
+                            className="slider w-full"
                         />
                         <button
                             onClick={() => updateSettings({...settings, fontSize: Math.min(120, settings.fontSize + 4)})}
-                            className="w-8 h-8 md:w-10 md:h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
+                            className="w-10 h-10 flex-shrink-0 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white active:scale-95 transition-all flex items-center justify-center"
                             aria-label="Aumentar tamaño de letra"
                         >
                             <Plus size={18} />
@@ -650,7 +651,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                         max="40"
                         value={settings.margin}
                         onChange={(e) => updateSettings({...settings, margin: parseInt(e.target.value)})}
-                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-upf-cyan"
+                        className="slider w-full"
                     />
                 </div>
 
@@ -658,21 +659,21 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                 <div className="flex items-center justify-between gap-1 md:gap-2">
                     <button
                         onClick={() => updateSettings({...settings, isMirroredX: !settings.isMirroredX})}
-                        className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.isMirroredX ? 'bg-upf-cyan/20 text-upf-cyan border border-upf-cyan/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
+                        className={`flex-1 py-2.5 min-h-11 rounded-md text-xs font-medium flex flex-col items-center justify-center gap-1 transition-colors ${settings.isMirroredX ? 'bg-upf-cyan/20 text-upf-cyan border border-upf-cyan/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
                     >
                         <Settings size={14} />
                         Espejo X
                     </button>
                     <button
                         onClick={() => updateSettings({...settings, isMirroredY: !settings.isMirroredY})}
-                        className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.isMirroredY ? 'bg-upf-cyan/20 text-upf-cyan border border-upf-cyan/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
+                        className={`flex-1 py-2.5 min-h-11 rounded-md text-xs font-medium flex flex-col items-center justify-center gap-1 transition-colors ${settings.isMirroredY ? 'bg-upf-cyan/20 text-upf-cyan border border-upf-cyan/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
                     >
                         <Settings size={14} className="rotate-90" />
                         Espejo Y
                     </button>
                     <button
                         onClick={() => updateSettings({...settings, useCamera: !settings.useCamera})}
-                        className={`flex-1 py-2 rounded-md text-xs font-medium flex flex-col items-center gap-1 transition-colors ${settings.useCamera ? 'bg-upf-cyan/20 text-upf-cyan border border-upf-cyan/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
+                        className={`flex-1 py-2.5 min-h-11 rounded-md text-xs font-medium flex flex-col items-center justify-center gap-1 transition-colors ${settings.useCamera ? 'bg-upf-cyan/20 text-upf-cyan border border-upf-cyan/50' : 'bg-slate-800 text-slate-400 border border-transparent'}`}
                     >
                         <Monitor size={14} />
                         Cámara
@@ -691,7 +692,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                         max="100"
                         value={Math.round(settings.opacity * 100)}
                         onChange={(e) => updateSettings({...settings, opacity: parseInt(e.target.value) / 100})}
-                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-upf-cyan"
+                        className="slider w-full"
                     />
                 </div>
 
@@ -707,7 +708,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                         max="25"
                         value={Math.round(settings.lineHeight * 10)}
                         onChange={(e) => updateSettings({...settings, lineHeight: parseInt(e.target.value) / 10})}
-                        className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-upf-cyan"
+                        className="slider w-full"
                     />
                 </div>
             </div>
@@ -730,7 +731,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                                 if (isRecording) stopRecording();
                                 updateSettings({ ...settings, audioDeviceId: e.target.value || undefined });
                             }}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none"
+                            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-base sm:text-sm text-white outline-none"
                         >
                             <option value="">Por defecto</option>
                             {audioDevices.filter(d => d.deviceId).map((d, i) => (
@@ -748,7 +749,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                                 if (isRecording) stopRecording();
                                 updateSettings({ ...settings, videoDeviceId: e.target.value || undefined });
                             }}
-                            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none"
+                            className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-base sm:text-sm text-white outline-none"
                         >
                             <option value="">Por defecto</option>
                             {videoDevices.filter(d => d.deviceId).map((d, i) => (
@@ -767,7 +768,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
       {isRecording && (
         <button
           onClick={stopRecording}
-          className="absolute top-4 right-4 z-[58] flex items-center gap-2 px-4 py-3 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg animate-pulse transition-colors"
+          className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 z-[58] flex items-center gap-2 px-4 py-3 rounded-full bg-upf-cyan hover:bg-upf-cyan/90 text-upf-black shadow-lg animate-pulse transition-colors"
           title="Detener Grabación"
         >
           <StopCircle size={24} fill="currentColor" />

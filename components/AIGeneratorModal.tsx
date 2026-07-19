@@ -61,7 +61,7 @@ export const AIGeneratorModal: React.FC<AIGeneratorModalProps> = ({ isOpen, onCl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-upf-black border border-upf-cyan/20 rounded-2xl shadow-2xl shadow-upf-cyan/10 w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
+      <div className="bg-upf-black border border-upf-cyan/20 rounded-2xl shadow-2xl shadow-upf-cyan/10 w-full max-w-md max-h-90dvh overflow-y-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center text-upf-cyan">
             <Sparkles className="w-6 h-6 mr-2" />
@@ -86,7 +86,7 @@ export const AIGeneratorModal: React.FC<AIGeneratorModalProps> = ({ isOpen, onCl
 
           <div>
             <label className="block text-sm font-medium text-upf-slate mb-1">Formato</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {FORMATOS.map((f) => (
                 <button
                   key={f}
@@ -126,7 +126,7 @@ export const AIGeneratorModal: React.FC<AIGeneratorModalProps> = ({ isOpen, onCl
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-sm font-medium text-upf-slate mb-1">Objetivo</label>
               <select
@@ -158,15 +158,15 @@ export const AIGeneratorModal: React.FC<AIGeneratorModalProps> = ({ isOpen, onCl
           </div>
 
           {error && (
-            <div className="flex items-center text-red-400 text-sm bg-red-400/10 p-3 rounded-lg">
-              <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+            <div className="flex items-center text-upf-cyan text-sm bg-upf-cyan/10 border border-upf-cyan/30 p-3 rounded-lg">
+              <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 text-upf-cyan" />
               {error}
             </div>
           )}
 
           <div className="flex gap-3 pt-2">
             <Button variant="secondary" onClick={onClose} className="flex-1">Cancelar</Button>
-            <Button variant="brand" onClick={handleGenerate} isLoading={loading} className="flex-1">
+            <Button onClick={handleGenerate} isLoading={loading} className="flex-1">
               Generar Guion
             </Button>
           </div>

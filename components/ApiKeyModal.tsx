@@ -73,7 +73,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-upf-black border border-upf-cyan/20 rounded-2xl shadow-2xl shadow-upf-cyan/10 w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
+      <div className="bg-upf-black border border-upf-cyan/20 rounded-2xl shadow-2xl shadow-upf-cyan/10 w-full max-w-md max-h-90dvh overflow-y-auto p-6">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center text-upf-cyan">
             <KeyRound className="w-6 h-6 mr-2" />
@@ -110,9 +110,9 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => 
                 <span className="text-upf-slate">Estado: </span>
                 {hasKey ? (
                   invalid ? (
-                    <span className="text-amber-400 font-medium">Guardada pero ilegible — elimínala o guarda una nueva</span>
+                    <span className="text-upf-cyan font-medium">Guardada pero ilegible — elimínala o guarda una nueva</span>
                   ) : (
-                    <span className="text-emerald-400 font-medium">Configurada (••••{last4})</span>
+                    <span className="text-upf-cyan font-medium">Configurada (••••{last4})</span>
                   )
                 ) : (
                   <span className="text-upf-slate">Sin configurar</span>
@@ -122,7 +122,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => 
                 <button
                   onClick={handleDelete}
                   disabled={saving}
-                  className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded text-red-400 hover:bg-red-400/10 transition-colors"
+                  className="inline-flex items-center gap-1 text-xs px-2.5 py-2 min-h-9 rounded text-upf-slate hover:text-upf-cyan hover:bg-upf-cyan/10 transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Eliminar
@@ -146,21 +146,21 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose }) => 
             </div>
 
             {error && (
-              <div className="flex items-center text-red-400 text-sm bg-red-400/10 p-3 rounded-lg">
-                <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+              <div className="flex items-center text-upf-cyan text-sm bg-upf-cyan/10 border border-upf-cyan/30 p-3 rounded-lg">
+                <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 text-upf-cyan" />
                 {error}
               </div>
             )}
             {success && (
-              <div className="flex items-center text-emerald-400 text-sm bg-emerald-400/10 p-3 rounded-lg">
-                <ShieldCheck className="w-4 h-4 mr-2 flex-shrink-0" />
+              <div className="flex items-center text-upf-cyan text-sm bg-upf-cyan/10 border border-upf-cyan/30 p-3 rounded-lg">
+                <ShieldCheck className="w-4 h-4 mr-2 flex-shrink-0 text-upf-cyan" />
                 {success}
               </div>
             )}
 
             <div className="flex gap-3 pt-1">
               <Button variant="secondary" onClick={onClose} className="flex-1">Cerrar</Button>
-              <Button variant="brand" onClick={handleSave} isLoading={saving} className="flex-1">
+              <Button onClick={handleSave} isLoading={saving} className="flex-1">
                 Guardar
               </Button>
             </div>

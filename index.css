@@ -2,10 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body, #root {
+  min-width: 0;
+}
+
 body {
-  background-color: #080C14; /* Jet Black (upf-black) */
-  color: #f8fafc;
-  overflow: hidden;
+  background-color: #080C14; /* upf-black */
+  color: #FFFFFF; /* upf-white */
+  /* El scroll vive en el documento (editor/login/admin); el prompter se
+     encierra a sí mismo con fixed+overflow-hidden. overscroll-behavior
+     evita el rubber-band/pull-to-refresh en móvil. */
+  overscroll-behavior-y: none;
 }
 
 /* Custom scrollbar for editor */
@@ -20,7 +27,7 @@ body {
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #CBD5E1;
+  background: #00E5FF; /* upf-cyan */
 }
 
 /* Dynamic viewport heights: dvh tracks the visible area on mobile
@@ -30,6 +37,46 @@ body {
 .h-45dvh { height: 45vh; height: 45dvh; }
 .h-100dvh { height: 100vh; height: 100dvh; }
 .max-h-70dvh { max-height: 70vh; max-height: 70dvh; }
+.max-h-85dvh { max-height: 85vh; max-height: 85dvh; }
+.max-h-90dvh { max-height: 90vh; max-height: 90dvh; }
+
+/* Range sliders: track fino (8px) pero área táctil de 24px y pulgar de 20px.
+   El input dibuja su propio track/pulgar (appearance:none) con los tokens de marca. */
+input[type="range"].slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 24px;
+  background: transparent;
+  cursor: pointer;
+}
+input[type="range"].slider::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.25); /* upf-slate/25 */
+}
+input[type="range"].slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #00E5FF; /* upf-cyan */
+  margin-top: -6px; /* centra el pulgar sobre el track de 8px */
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+}
+input[type="range"].slider::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.25);
+}
+input[type="range"].slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 9999px;
+  background: #00E5FF;
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+}
 
 /* Hide scrollbar in the prompter scroll container */
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }

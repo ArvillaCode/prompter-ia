@@ -16,13 +16,15 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col bg-grid">
+    <div className="min-h-screen-dvh bg-upf-black text-slate-200 flex flex-col bg-grid min-w-0">
       <header className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-upf-cyan rounded-lg flex items-center justify-center shadow-lg shadow-upf-cyan/30">
-              <Shield className="text-upf-black w-4 h-4" />
-            </div>
+            <img
+              src="/brand/upfunnel-logo-square.png"
+              alt="Upfunnel"
+              className="w-8 h-8 rounded-lg"
+            />
             <h1 className="text-lg font-bold">Admin Panel</h1>
           </div>
           <div className="flex items-center gap-2">
@@ -38,12 +40,12 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
       </header>
 
       <div className="border-b border-slate-800">
-        <div className="max-w-6xl mx-auto px-4 flex gap-1">
+        <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto">
           {tabs.map(tab => (
             <button
               key={tab.path}
               onClick={() => navigate(tab.path)}
-              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap shrink-0 ${
                 location.pathname === tab.path
                   ? 'border-upf-cyan text-upf-cyan'
                   : 'border-transparent text-slate-400 hover:text-white'
@@ -56,7 +58,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         </div>
       </div>
 
-      <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6">
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 min-w-0">
         {children}
       </main>
     </div>

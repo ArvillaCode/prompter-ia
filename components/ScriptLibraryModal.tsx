@@ -28,7 +28,7 @@ export const ScriptLibraryModal: React.FC<ScriptLibraryModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg p-6 max-h-[85vh] flex flex-col">
+      <div className="bg-upf-black border border-upf-cyan/20 rounded-2xl shadow-2xl shadow-upf-cyan/10 w-full max-w-lg p-6 max-h-85dvh flex flex-col">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center text-upf-cyan">
             <FolderOpen className="w-6 h-6 mr-2" />
@@ -64,7 +64,7 @@ export const ScriptLibraryModal: React.FC<ScriptLibraryModalProps> = ({
               <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={(e) => { e.stopPropagation(); onDuplicate(s.id); }}
-                  className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700"
+                  className="p-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700"
                   title="Duplicar"
                 >
                   <Copy size={16} />
@@ -76,7 +76,7 @@ export const ScriptLibraryModal: React.FC<ScriptLibraryModalProps> = ({
                       onDelete(s.id);
                     }
                   }}
-                  className="p-2 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-700"
+                  className="p-2.5 rounded-lg text-slate-400 hover:text-upf-cyan hover:bg-slate-700"
                   title="Eliminar"
                 >
                   <Trash2 size={16} />

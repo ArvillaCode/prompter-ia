@@ -5,8 +5,8 @@ import { Button } from '../Button';
 import { Search, ChevronDown, ChevronUp, Shield, User, Crown } from 'lucide-react';
 
 const ROLE_BADGES: Record<string, { color: string; icon: React.ReactNode }> = {
-  superadmin: { color: 'bg-red-600/20 text-red-400 border-red-600/50', icon: <Crown className="w-3 h-3" /> },
-  admin: { color: 'bg-amber-600/20 text-amber-400 border-amber-600/50', icon: <Shield className="w-3 h-3" /> },
+  superadmin: { color: 'bg-upf-cyan/20 text-upf-cyan border-upf-cyan/50', icon: <Crown className="w-3 h-3" /> },
+  admin: { color: 'bg-upf-cyan/15 text-upf-cyan border-upf-cyan/40', icon: <Shield className="w-3 h-3" /> },
   user: { color: 'bg-slate-700/50 text-slate-300 border-slate-600', icon: <User className="w-3 h-3" /> },
 };
 
@@ -41,7 +41,7 @@ export const UsersList: React.FC = () => {
   };
 
   if (error) {
-    return <div className="text-red-400 text-center py-12">Error: {error}</div>;
+    return <div className="text-upf-cyan text-center py-12">Error: {error}</div>;
   }
 
   return (
@@ -67,7 +67,7 @@ export const UsersList: React.FC = () => {
       ) : (
         <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="border-b border-slate-800 text-slate-400">
                   <th className="text-left px-4 py-3 font-medium">Email</th>
@@ -111,16 +111,16 @@ export const UsersList: React.FC = () => {
                           <span className="text-xs text-slate-500">N/A</span>
                         ) : u.licenseExpiresAt ? (
                           u.licenseExpiresAt > Date.now() ? (
-                            <span className="text-xs text-emerald-400">
+                            <span className="text-xs text-upf-cyan">
                               Vence {new Date(u.licenseExpiresAt).toLocaleDateString()}
                             </span>
                           ) : (
-                            <span className="text-xs text-red-400">
+                            <span className="text-xs text-upf-slate">
                               Venció {new Date(u.licenseExpiresAt).toLocaleDateString()}
                             </span>
                           )
                         ) : (
-                          <span className="text-xs text-amber-400">Sin licencia</span>
+                          <span className="text-xs text-upf-slate">Sin licencia</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-slate-400 hidden lg:table-cell">
@@ -129,10 +129,10 @@ export const UsersList: React.FC = () => {
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
                           u.isActive
-                            ? 'bg-emerald-600/20 text-emerald-400'
-                            : 'bg-red-600/20 text-red-400'
+                            ? 'bg-upf-cyan/20 text-upf-cyan'
+                            : 'bg-upf-slate/20 text-upf-slate'
                         }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${u.isActive ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                          <span className={`w-1.5 h-1.5 rounded-full ${u.isActive ? 'bg-upf-cyan' : 'bg-upf-slate'}`} />
                           {u.isActive ? 'Activo' : 'Inactivo'}
                         </span>
                       </td>
@@ -140,17 +140,17 @@ export const UsersList: React.FC = () => {
                         <div className="flex items-center justify-end gap-2">
                           <Button
                             variant="ghost"
-                            className="text-xs px-2 py-1 h-7"
+                            size="sm"
                             onClick={() => navigate(`/admin/users/${u.id}`)}
                           >
                             Editar
                           </Button>
                           <button
                             onClick={() => handleToggleActive(u.id)}
-                            className={`text-xs px-2 py-1 rounded transition-colors ${
+                            className={`text-xs px-2.5 py-2 min-h-9 rounded transition-colors ${
                               u.isActive
-                                ? 'text-red-400 hover:bg-red-400/10'
-                                : 'text-emerald-400 hover:bg-emerald-400/10'
+                                ? 'text-upf-slate hover:bg-upf-cyan/10 hover:text-upf-cyan'
+                                : 'text-upf-cyan hover:bg-upf-cyan/20'
                             }`}
                           >
                             {u.isActive ? 'Desactivar' : 'Activar'}

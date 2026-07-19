@@ -56,13 +56,15 @@ export const LoginScreen: React.FC = () => {
   const displayError = localError || error;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center p-4 bg-grid">
+    <div className="min-h-screen-dvh bg-upf-black text-slate-200 flex flex-col items-center justify-center p-4 bg-grid">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-upf-cyan rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-upf-cyan/30">
-            <Mic className="text-upf-black w-8 h-8" />
-          </div>
+          <img
+            src="/brand/upfunnel-logo-horizontal.png"
+            alt="Upfunnel"
+            className="h-10 sm:h-12 mb-4"
+          />
           <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
             ProPrompter AI
           </h1>
@@ -76,7 +78,7 @@ export const LoginScreen: React.FC = () => {
           <div className="flex gap-2 mb-6 p-1 bg-slate-800/50 rounded-lg">
             <button
               onClick={() => { setMode('login'); setLocalError(null); clearError(); }}
-              className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 py-2.5 min-h-11 rounded-md text-sm font-medium transition-colors ${
                 mode === 'login' ? 'bg-upf-cyan text-upf-black' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -84,7 +86,7 @@ export const LoginScreen: React.FC = () => {
             </button>
             <button
               onClick={() => { setMode('register'); setLocalError(null); clearError(); }}
-              className={`flex-1 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`flex-1 py-2.5 min-h-11 rounded-md text-sm font-medium transition-colors ${
                 mode === 'register' ? 'bg-upf-cyan text-upf-black' : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -161,8 +163,8 @@ export const LoginScreen: React.FC = () => {
             </div>
 
             {displayError && (
-              <div className="flex items-center text-red-400 text-sm bg-red-400/10 p-3 rounded-lg border border-red-400/20">
-                <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0" />
+              <div className="flex items-center text-upf-cyan text-sm bg-upf-cyan/10 border border-upf-cyan/30 p-3 rounded-lg">
+                <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 text-upf-cyan" />
                 {displayError}
               </div>
             )}

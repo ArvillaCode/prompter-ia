@@ -29,3 +29,9 @@ local.db
 
 .vercel
 .env*
+
+# Personal config / agents
+.agents/
+.claude/
+.commandcode/skills/
+skills-lock.json

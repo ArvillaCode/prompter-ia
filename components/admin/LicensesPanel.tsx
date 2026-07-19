@@ -25,10 +25,10 @@ function deriveStatus(l: AdminLicense): DerivedStatus {
 }
 
 const STATUS_STYLES: Record<DerivedStatus, string> = {
-  disponible: 'bg-cyan-600/20 text-cyan-300',
-  activa: 'bg-emerald-600/20 text-emerald-400',
-  vencida: 'bg-amber-600/20 text-amber-400',
-  revocada: 'bg-red-600/20 text-red-400',
+  disponible: 'bg-upf-cyan/20 text-upf-cyan',
+  activa: 'bg-upf-cyan/15 text-upf-cyan',
+  vencida: 'bg-upf-slate/20 text-upf-slate',
+  revocada: 'bg-upf-slate/15 text-upf-slate',
 };
 
 function daysRemaining(l: AdminLicense): string {
@@ -136,9 +136,10 @@ export const LicensesPanel: React.FC = () => {
       )}
 
       {lastCreated && (
-        <div className="mb-6 bg-emerald-600/10 border border-emerald-600/30 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-6 bg-upf-cyan/10 border border-upf-cyan/30 rounded-xl p-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-sm text-emerald-400 font-medium mb-1">
+            <div className="text-sm text-upf-cyan font-medium mb-1">
+              <Check className="w-4 h-4 inline mr-1" />
               Licencia de {durationLabel(lastCreated.durationDays)} generada — compártela con el usuario:
             </div>
             <code className="text-lg font-mono tracking-wider text-white">{lastCreated.code}</code>
@@ -146,7 +147,7 @@ export const LicensesPanel: React.FC = () => {
               La vigencia empieza a contar cuando el usuario la use, no ahora.
             </p>
           </div>
-          <Button variant="secondary" onClick={() => handleCopy(lastCreated)} icon={copiedId === lastCreated.id ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}>
+          <Button variant="secondary" onClick={() => handleCopy(lastCreated)} icon={copiedId === lastCreated.id ? <Check className="w-4 h-4 text-upf-cyan" /> : <Copy className="w-4 h-4" />}>
             {copiedId === lastCreated.id ? 'Copiada' : 'Copiar'}
           </Button>
         </div>
@@ -154,10 +155,10 @@ export const LicensesPanel: React.FC = () => {
 
       <div className="flex flex-wrap gap-3 mb-6">
         {([
-          ['Disponibles', counts.disponibles, 'text-cyan-300'],
-          ['Activas', counts.activas, 'text-emerald-400'],
-          ['Vencidas', counts.vencidas, 'text-amber-400'],
-          ['Revocadas', counts.revocadas, 'text-red-400'],
+          ['Disponibles', counts.disponibles, 'text-upf-cyan'],
+          ['Activas', counts.activas, 'text-upf-cyan'],
+          ['Vencidas', counts.vencidas, 'text-upf-slate'],
+          ['Revocadas', counts.revocadas, 'text-upf-slate'],
         ] as const).map(([label, value, color]) => (
           <div key={label} className="bg-slate-900 border border-slate-800 rounded-lg px-4 py-2">
             <span className={`text-lg font-bold ${color}`}>{value}</span>
@@ -166,7 +167,7 @@ export const LicensesPanel: React.FC = () => {
         ))}
       </div>
 
-      {error && <div className="text-red-400 text-sm mb-4">Error: {error}</div>}
+      {error && <div className="text-upf-cyan text-sm mb-4">Error: {error}</div>}
 
       <div className="relative w-full sm:w-72 mb-4">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -186,7 +187,7 @@ export const LicensesPanel: React.FC = () => {
       ) : (
         <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[600px] text-sm">
               <thead>
                 <tr className="border-b border-slate-800 text-slate-400">
                   <th className="text-left px-4 py-3 font-medium">Código</th>
@@ -212,7 +213,7 @@ export const LicensesPanel: React.FC = () => {
                           title="Copiar código"
                         >
                           {l.code}
-                          {copiedId === l.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
+                          {copiedId === l.id ? <Check className="w-3.5 h-3.5 text-upf-cyan" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
                         </button>
                       </td>
                       <td className="px-4 py-3 text-slate-300">{durationLabel(l.durationDays)}</td>
@@ -235,7 +236,7 @@ export const LicensesPanel: React.FC = () => {
                         {isSuperadmin && l.status !== 'revoked' && (
                           <button
                             onClick={() => handleRevoke(l)}
-                            className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded text-red-400 hover:bg-red-400/10 transition-colors"
+                            className="inline-flex items-center gap-1 text-xs px-2.5 py-2 min-h-9 rounded text-upf-slate hover:text-upf-cyan hover:bg-upf-cyan/10 transition-colors"
                           >
                             <Ban className="w-3.5 h-3.5" />
                             Revocar
