@@ -16,8 +16,8 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   ];
 
   return (
-    <div className="min-h-screen-dvh bg-upf-black text-slate-200 flex flex-col bg-grid min-w-0">
-      <header className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 sticky top-0 z-20">
+    <div className="h-screen-dvh bg-upf-black text-slate-200 flex flex-col bg-grid min-w-0">
+      <header className="bg-slate-900/50 backdrop-blur-sm border-b border-slate-800 shrink-0 z-20">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
@@ -39,7 +39,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         </div>
       </header>
 
-      <div className="border-b border-slate-800">
+      <div className="border-b border-slate-800 shrink-0">
         <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto">
           {tabs.map(tab => (
             <button
@@ -58,7 +58,7 @@ export const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children 
         </div>
       </div>
 
-      <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 min-w-0">
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 min-w-0 overflow-y-auto">
         {children}
       </main>
     </div>
