@@ -1,0 +1,12 @@
+feat: dashboard interactivo con Recharts, filtro por período y desglose de licencias
+
+- Nuevo endpoint GET /api/admin/stats/detailed?range= (día/semana/mes/año)
+- Gráfica de registros de usuarios por período (BarChart)
+- Donut de licencias por duración (1 mes, 3 meses, 1 año)
+- Barras horizontales de estado de licencias (disponibles/activas/vencidas/revocadas)
+- Sección de actividad reciente con últimos usuarios y licencias
+- Filtro por período tipo segmented control
+- Instalación de Recharts para gráficas interactivas
+- Refactor: AdminDashboard → StatCards + DateRangeFilter + chart components
+
+Co-authored-by: CommandCodeBot <noreply@commandcode.ai>

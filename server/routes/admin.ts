@@ -339,4 +339,81 @@ router.get('/stats', requireAdmin, async (req: Request, res: Response) => {
   });
 });
 
+router.get('/stats/detailed', requireAdmin, async (req: Request, res: Response) => {
+  const db = getDbClient();
+  const range = (req.query.range as string) || 'week';
+  const now = Date.now();
+
+  let rangeStart: number;
+  let groupFormat: string;
+
+  switch (range) {
+    case 'day':
+      rangeStart = now - 86_400_000;
+      groupFormat = '%Y-%m-%d %H:00';
+      break;
+    case 'week':
+      rangeStart = now - 7 * 86_400_000;
+      groupFormat = '%Y-%m-%d';
+      break;
+    case 'month':
+      rangeStart = now - 30 * 86_400_000;
+      groupFormat = '%Y-%m-%d';
+      break;
+    case 'year':
+      rangeStart = now - 365 * 86_400_000;
+      groupFormat = '%Y-%m';
+      break;
+    default:
+      rangeStart = now - 7 * 86_400_000;
+      groupFormat = '%Y-%m-%d';
+  }
+
+  const [totalUsers, activeUsers, totalScripts, proUsers, userRegistrations, licensesByDuration, licensesByStatus, latestUsers, latestLicenses] = await Promise.all([
+    db.execute('SELECT COUNT(*) as count FROM users'),
+    db.execute('SELECT COUNT(*) as count FROM users WHERE is_active = 1'),
+    db.execute('SELECT COUNT(*) as count FROM scripts'),
+    db.execute("SELECT COUNT(*) as count FROM users WHERE plan = 'pro'"),
+    db.execute({
+      sql: `SELECT strftime('${groupFormat}', created_at / 1000, 'unixepoch') as bucket, COUNT(*) as count FROM users WHERE created_at >= ? AND created_at < ? GROUP BY bucket ORDER BY bucket`,
+      args: [rangeStart, now],
+    }),
+    db.execute('SELECT duration_days, COUNT(*) as count FROM licenses GROUP BY duration_days ORDER BY duration_days'),
+    db.execute({
+      sql: `SELECT CASE WHEN status = 'used' AND expires_at < ? THEN 'expired' WHEN status = 'used' THEN 'active' ELSE status END as status_group, COUNT(*) as count FROM licenses GROUP BY status_group ORDER BY status_group`,
+      args: [now],
+    }),
+    db.execute({
+      sql: 'SELECT id, email, display_name as displayName, plan, created_at as createdAt FROM users ORDER BY created_at DESC LIMIT 5',
+    }),
+    db.execute({
+      sql: 'SELECT id, code, duration_days as durationDays, status, created_at as createdAt FROM licenses ORDER BY created_at DESC LIMIT 5',
+    }),
+  ]);
+
+  res.status(200).json({
+    totalUsers: (totalUsers.rows[0] as any).count,
+    activeUsers: (activeUsers.rows[0] as any).count,
+    totalScripts: (totalScripts.rows[0] as any).count,
+    proUsers: (proUsers.rows[0] as any).count,
+    userRegistrations: userRegistrations.rows.map((r: any) => ({ bucket: r.bucket, count: r.count })),
+    licensesByDuration: licensesByDuration.rows.map((r: any) => ({ durationDays: r.duration_days, count: r.count })),
+    licensesByStatus: licensesByStatus.rows.map((r: any) => ({ status: r.status_group, count: r.count })),
+    latestUsers: latestUsers.rows.map((r: any) => ({
+      id: r.id,
+      email: r.email,
+      displayName: r.displayName,
+      plan: r.plan,
+      createdAt: Number(r.createdAt),
+    })),
+    latestLicenses: latestLicenses.rows.map((r: any) => ({
+      id: r.id,
+      code: r.code,
+      durationDays: r.durationDays,
+      status: r.status,
+      createdAt: Number(r.createdAt),
+    })),
+  });
+});
+
 export default router;

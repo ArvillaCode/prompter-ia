@@ -61,6 +61,43 @@ export interface AdminStats {
   proUsers: number;
 }
 
+export type DateRange = 'day' | 'week' | 'month' | 'year';
+
+export interface BucketCount {
+  bucket: string;
+  count: number;
+}
+
+export interface DurationCount {
+  durationDays: number;
+  count: number;
+}
+
+export interface StatusCount {
+  status: string;
+  count: number;
+}
+
+export interface AdminDashboardData extends AdminStats {
+  userRegistrations: BucketCount[];
+  licensesByDuration: DurationCount[];
+  licensesByStatus: StatusCount[];
+  latestUsers: {
+    id: string;
+    email: string;
+    displayName: string | null;
+    plan: string;
+    createdAt: number;
+  }[];
+  latestLicenses: {
+    id: string;
+    code: string;
+    durationDays: number;
+    status: string;
+    createdAt: number;
+  }[];
+}
+
 export const adminApi = {
   listUsers: () => apiFetch<{ users: AdminUser[] }>('/api/admin/users'),
   getUser: (id: string) => apiFetch<{ user: AdminUser }>(`/api/admin/users/${id}`),
@@ -79,6 +116,8 @@ export const adminApi = {
       method: 'PATCH',
     }),
   getStats: () => apiFetch<AdminStats>('/api/admin/stats'),
+  getDetailedStats: (range: DateRange) =>
+    apiFetch<AdminDashboardData>(`/api/admin/stats/detailed?range=${range}`),
   listLicenses: () => apiFetch<{ licenses: AdminLicense[] }>('/api/admin/licenses'),
   createLicense: (durationDays: number) =>
     apiFetch<{ license: AdminLicense }>('/api/admin/licenses', {
