@@ -45,8 +45,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
 
   const isRecordingRef = useRef(false);
   useEffect(() => { isRecordingRef.current = isRecording; }, [isRecording]);
-  const isRecordingPausedRef = useRef(false);
-  useEffect(() => { isRecordingPausedRef.current = isRecordingPaused; }, [isRecordingPaused]);
+  const wasPlayingBeforeRecordingPauseRef = useRef(false);
 
   // Revoke any remaining object URLs when leaving the prompter
   useEffect(() => {
@@ -298,8 +297,10 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
 
   const pauseRecording = () => {
     if (mediaRecorderRef.current?.state === 'recording') {
+      wasPlayingBeforeRecordingPauseRef.current = isPlaying;
       mediaRecorderRef.current.pause();
       setIsRecordingPaused(true);
+      setIsPlaying(false);
     }
   };
 
@@ -307,6 +308,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
     if (mediaRecorderRef.current?.state === 'paused') {
       mediaRecorderRef.current.resume();
       setIsRecordingPaused(false);
+      if (wasPlayingBeforeRecordingPauseRef.current) setIsPlaying(true);
     }
   };
 
@@ -316,6 +318,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
         setIsRecording(false);
         setIsRecordingPaused(false);
         setIsPlaying(false); // Also stop scrolling
+        setShowControls(true);
     }
   };
 
@@ -515,7 +518,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
       )}
 
       {/* Controls Layer */}
-      <div className={`absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-slate-800 p-3 md:p-6 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-[max(1.5rem,env(safe-area-inset-bottom))] max-h-70dvh overflow-y-auto overscroll-contain transition-transform duration-300 z-50 ${showControls ? 'translate-y-0' : 'translate-y-full'}`}>
+      <div className={`absolute bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md border-t border-slate-800 p-3 md:p-6 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:pb-[max(1.5rem,env(safe-area-inset-bottom))] max-h-70dvh overflow-y-auto overscroll-contain transition-transform duration-300 z-50 ${showControls && !isRecording ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="max-w-6xl mx-auto flex flex-col gap-3 md:gap-4">
             
             {/* Main Transport: en móvil el grupo de controles baja a su propia
@@ -794,25 +797,38 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
         </div>
       </div>
 
-      {/* Floating Buttons — visible during active recording */}
+      {/* Compact recording toolbar — always visible at the bottom while recording */}
       {isRecording && (
-        <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 z-[58] flex items-center gap-3">
-          <button
-            onClick={isRecordingPaused ? resumeRecording : pauseRecording}
-            className="flex items-center gap-2 px-4 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-white shadow-lg transition-colors"
-            title={isRecordingPaused ? "Reanudar Grabación" : "Pausar Grabación"}
-          >
-            {isRecordingPaused ? <Play size={20} fill="currentColor" /> : <Pause size={20} />}
-            <span className="text-sm font-medium hidden sm:inline">{isRecordingPaused ? "Reanudar" : "Pausa"}</span>
-          </button>
-          <button
-            onClick={stopRecording}
-            className="flex items-center gap-2 px-4 py-3 rounded-full bg-upf-cyan hover:bg-upf-cyan/90 text-upf-black shadow-lg animate-pulse transition-colors"
-            title="Detener Grabación"
-          >
-            <StopCircle size={24} fill="currentColor" />
-            <span className="text-sm font-medium hidden sm:inline">Detener</span>
-          </button>
+        <div className="absolute bottom-0 left-0 right-0 z-[58] border-t border-slate-700 bg-black/85 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur-md">
+          <div className="mx-auto flex max-w-xl items-center justify-center gap-3 sm:gap-5">
+            <button
+              onClick={() => setIsPlaying(prev => !prev)}
+              disabled={isRecordingPaused}
+              className="flex min-h-12 items-center gap-2 rounded-full bg-slate-800 px-4 text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+              title={isPlaying ? "Pausar guion" : "Reproducir guion"}
+            >
+              {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+              <span className="hidden text-sm font-medium sm:inline">{isPlaying ? "Pausar guion" : "Reproducir"}</span>
+            </button>
+
+            <button
+              onClick={isRecordingPaused ? resumeRecording : pauseRecording}
+              className="flex min-h-12 items-center gap-2 rounded-full bg-slate-800 px-4 text-white transition-colors hover:bg-slate-700"
+              title={isRecordingPaused ? "Reanudar grabación y guion" : "Pausar grabación y guion"}
+            >
+              {isRecordingPaused ? <Play size={20} fill="currentColor" /> : <Pause size={20} />}
+              <span className="hidden text-sm font-medium sm:inline">{isRecordingPaused ? "Reanudar" : "Pausar grabación"}</span>
+            </button>
+
+            <button
+              onClick={stopRecording}
+              className="flex min-h-12 items-center gap-2 rounded-full bg-upf-cyan px-4 text-upf-black shadow-lg shadow-upf-cyan/20 transition-colors hover:bg-upf-cyan/90"
+              title="Detener grabación"
+            >
+              <StopCircle size={24} fill="currentColor" />
+              <span className="hidden text-sm font-medium sm:inline">Detener</span>
+            </button>
+          </div>
         </div>
       )}
     </div>
