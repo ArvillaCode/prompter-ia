@@ -32,6 +32,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
   
   // Recording State
   const [isRecording, setIsRecording] = useState(false);
+  const [isRecordingPaused, setIsRecordingPaused] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const [recordings, setRecordings] = useState<Recording[]>([]);
@@ -44,6 +45,8 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
 
   const isRecordingRef = useRef(false);
   useEffect(() => { isRecordingRef.current = isRecording; }, [isRecording]);
+  const isRecordingPausedRef = useRef(false);
+  useEffect(() => { isRecordingPausedRef.current = isRecordingPaused; }, [isRecordingPaused]);
 
   // Revoke any remaining object URLs when leaving the prompter
   useEffect(() => {
@@ -270,6 +273,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
 
     mediaRecorder.start();
     setIsRecording(true);
+    setIsRecordingPaused(false);
   };
 
   // Pressing record starts a 3-2-1 countdown before actually recording
@@ -292,10 +296,25 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [countdown, stream]);
 
+  const pauseRecording = () => {
+    if (mediaRecorderRef.current?.state === 'recording') {
+      mediaRecorderRef.current.pause();
+      setIsRecordingPaused(true);
+    }
+  };
+
+  const resumeRecording = () => {
+    if (mediaRecorderRef.current?.state === 'paused') {
+      mediaRecorderRef.current.resume();
+      setIsRecordingPaused(false);
+    }
+  };
+
   const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
+    if (mediaRecorderRef.current && (mediaRecorderRef.current.state === 'recording' || mediaRecorderRef.current.state === 'paused')) {
         mediaRecorderRef.current.stop();
         setIsRecording(false);
+        setIsRecordingPaused(false);
         setIsPlaying(false); // Also stop scrolling
     }
   };
@@ -346,8 +365,8 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
     const handleMouseMove = () => {
-      // During recording or countdown: keep controls hidden (use floating stop button)
-      if (isRecording || countdown !== null) return;
+      // During recording or countdown: keep controls hidden (use floating buttons)
+      if (isRecordingRef.current || countdown !== null) return;
       setShowControls(true);
       clearTimeout(timeout);
       timeout = setTimeout(() => {
@@ -363,7 +382,7 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
       window.removeEventListener('touchstart', handleMouseMove);
       clearTimeout(timeout);
     };
-  }, [isPlaying, isRecording, countdown]);
+  }, [isPlaying, countdown]);
 
   const textTransformStyle = React.useMemo(() => ({
     transform: `scale(${settings.isMirroredX ? -1 : 1}, ${settings.isMirroredY ? -1 : 1})`,
@@ -551,6 +570,17 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
                     >
                         {isPlaying ? <Pause fill="currentColor" /> : <Play fill="currentColor" className="ml-1" />}
                     </button>
+
+                    {/* Pause / Resume Button (visible while recording) */}
+                    {isRecording && settings.useCamera && (
+                        <button
+                            onClick={isRecordingPaused ? resumeRecording : pauseRecording}
+                            className="p-3 rounded-full bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                            title={isRecordingPaused ? "Reanudar Grabación" : "Pausar Grabación"}
+                        >
+                            {isRecordingPaused ? <Play size={20} fill="currentColor" /> : <Pause size={20} />}
+                        </button>
+                    )}
 
                     {/* Recording Button */}
                     {settings.useCamera && (
@@ -764,16 +794,26 @@ export const PrompterView: React.FC<PrompterViewProps> = React.memo(({ script, s
         </div>
       </div>
 
-      {/* Floating Stop Button — visible only during active recording */}
+      {/* Floating Buttons — visible during active recording */}
       {isRecording && (
-        <button
-          onClick={stopRecording}
-          className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 z-[58] flex items-center gap-2 px-4 py-3 rounded-full bg-upf-cyan hover:bg-upf-cyan/90 text-upf-black shadow-lg animate-pulse transition-colors"
-          title="Detener Grabación"
-        >
-          <StopCircle size={24} fill="currentColor" />
-          <span className="text-sm font-medium hidden sm:inline">Detener</span>
-        </button>
+        <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 z-[58] flex items-center gap-3">
+          <button
+            onClick={isRecordingPaused ? resumeRecording : pauseRecording}
+            className="flex items-center gap-2 px-4 py-3 rounded-full bg-slate-800 hover:bg-slate-700 text-white shadow-lg transition-colors"
+            title={isRecordingPaused ? "Reanudar Grabación" : "Pausar Grabación"}
+          >
+            {isRecordingPaused ? <Play size={20} fill="currentColor" /> : <Pause size={20} />}
+            <span className="text-sm font-medium hidden sm:inline">{isRecordingPaused ? "Reanudar" : "Pausa"}</span>
+          </button>
+          <button
+            onClick={stopRecording}
+            className="flex items-center gap-2 px-4 py-3 rounded-full bg-upf-cyan hover:bg-upf-cyan/90 text-upf-black shadow-lg animate-pulse transition-colors"
+            title="Detener Grabación"
+          >
+            <StopCircle size={24} fill="currentColor" />
+            <span className="text-sm font-medium hidden sm:inline">Detener</span>
+          </button>
+        </div>
       )}
     </div>
   );
