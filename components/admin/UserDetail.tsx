@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { adminApi, AdminUser } from '../../services/adminApi';
 import { Button } from '../Button';
 import { useAuth } from '../../context/AuthContext';
-import { ArrowLeft, Shield, Crown, User, Save, KeyRound, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Shield, Crown, User, Save, KeyRound, AlertCircle, CheckCircle2, Eye, EyeOff } from 'lucide-react';
 
 export const UserDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +17,9 @@ export const UserDetail: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [licenseCode, setLicenseCode] = useState('');
   const [assigning, setAssigning] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
   const isSuperadmin = caller?.role === 'superadmin';
@@ -48,6 +51,22 @@ export const UserDetail: React.FC = () => {
       setFeedback({ type: 'error', msg: err.message });
     } finally {
       setAssigning(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!id || !newPassword) return;
+    setResetting(true);
+    setFeedback(null);
+    try {
+      await adminApi.resetPassword(id, newPassword);
+      setNewPassword('');
+      setShowPassword(false);
+      setFeedback({ type: 'success', msg: 'Contraseña restablecida correctamente.' });
+    } catch (err: any) {
+      setFeedback({ type: 'error', msg: err.message });
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -211,6 +230,47 @@ export const UserDetail: React.FC = () => {
               </div>
               <p className="text-xs text-slate-500 mt-1.5">
                 La vigencia empieza a contar desde hoy. Genera licencias en la pestaña Licencias.
+              </p>
+            </div>
+          )}
+
+          {isSuperadmin && (
+            <div className="pt-4 border-t border-slate-800">
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Restablecer contraseña
+              </label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    placeholder="Nueva contraseña (mín. 8 caracteres)"
+                    spellCheck={false}
+                    autoComplete="new-password"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-10 pr-10 py-2 text-white placeholder-slate-600 outline-none focus:ring-2 focus:ring-upf-cyan/50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={handleResetPassword}
+                  isLoading={resetting}
+                  disabled={!newPassword}
+                  className="w-full sm:w-auto"
+                >
+                  Restablecer
+                </Button>
+              </div>
+              <p className="text-xs text-slate-500 mt-1.5">
+                Requiere mayúscula, minúscula, número y carácter especial. El usuario deberá iniciar sesión con esta nueva contraseña.
               </p>
             </div>
           )}

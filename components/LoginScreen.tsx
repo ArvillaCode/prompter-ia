@@ -162,6 +162,14 @@ export const LoginScreen: React.FC = () => {
               </div>
             </div>
 
+            {mode === 'login' && (
+              <div className="text-right">
+                <a href="/forgot-password" className="text-sm text-slate-500 hover:text-upf-cyan transition-colors">
+                  ¿Olvidaste tu contraseña?
+                </a>
+              </div>
+            )}
+
             {displayError && (
               <div className="flex items-center text-upf-cyan text-sm bg-upf-cyan/10 border border-upf-cyan/30 p-3 rounded-lg">
                 <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 text-upf-cyan" />

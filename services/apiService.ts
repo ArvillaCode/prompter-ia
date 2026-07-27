@@ -66,6 +66,18 @@ export const authApi = {
     }),
 
   me: () => apiFetch<{ user: AuthUser }>('/api/auth/me'),
+
+  forgotPassword: (email: string) =>
+    apiFetch<{ success: boolean }>('/api/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    }),
+
+  resetPassword: (token: string, password: string) =>
+    apiFetch<{ success: boolean }>('/api/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+    }),
 };
 
 // --- Scripts ---

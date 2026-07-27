@@ -6,6 +6,8 @@ import { AIGeneratorModal } from './components/AIGeneratorModal';
 import { ScriptLibraryModal } from './components/ScriptLibraryModal';
 import { Button } from './components/Button';
 import { LoginScreen } from './components/LoginScreen';
+import { ForgotPasswordScreen } from './components/ForgotPasswordScreen';
+import { ResetPasswordScreen } from './components/ResetPasswordScreen';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { UsersList } from './components/admin/UsersList';
 import { UserDetail } from './components/admin/UserDetail';
@@ -263,6 +265,8 @@ export default function App() {
   const { user, isLoading } = useAuth();
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith('/admin');
+  const isForgotRoute = location.pathname === '/forgot-password';
+  const isResetRoute = location.pathname.startsWith('/reset-password');
 
   if (isLoading) {
     return (
@@ -271,6 +275,9 @@ export default function App() {
       </div>
     );
   }
+
+  if (isForgotRoute) return <ForgotPasswordScreen />;
+  if (isResetRoute) return <ResetPasswordScreen />;
 
   if (isAdminRoute) {
     if (!user) return <LoginScreen />;

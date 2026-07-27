@@ -1,9 +1,10 @@
 import { randomBytes } from 'node:crypto';
 import { Router, Request, Response } from 'express';
+import { hash } from 'bcryptjs';
 import { getDbClient } from '../db/client';
 import { requireAuth } from '../middleware/auth';
 import { rateLimit } from '../middleware/rateLimit';
-import { validateLicenseCode, normalizeLicenseCode } from '../../api/lib/validate';
+import { validateLicenseCode, normalizeLicenseCode, validatePassword } from '../../api/lib/validate';
 
 const router = Router();
 
@@ -157,6 +158,30 @@ router.patch('/users/:id/toggle-active', requireAdmin, async (req: Request, res:
   });
 
   res.status(200).json({ success: true, isActive: !current });
+});
+
+router.post('/users/:id/reset-password', requireSuperadmin, async (req: Request, res: Response) => {
+  const { password } = req.body ?? {};
+  const passwordError = validatePassword(password);
+  if (passwordError) { res.status(400).json({ error: passwordError }); return; }
+
+  const id = req.params.id as string;
+  const db = getDbClient();
+  const result = await db.execute({
+    sql: 'SELECT id FROM users WHERE id = ?',
+    args: [id],
+  });
+  if (result.rows.length === 0) {
+    res.status(404).json({ error: 'Usuario no encontrado.' }); return;
+  }
+
+  const passwordHash = await hash(password as string, 10);
+  await db.execute({
+    sql: 'UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?',
+    args: [passwordHash, Date.now(), id],
+  });
+
+  res.status(200).json({ success: true });
 });
 
 // ==================== Licencias ====================

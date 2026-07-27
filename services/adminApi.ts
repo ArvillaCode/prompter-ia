@@ -115,6 +115,11 @@ export const adminApi = {
     apiFetch<{ success: boolean; isActive: boolean }>(`/api/admin/users/${id}/toggle-active`, {
       method: 'PATCH',
     }),
+  resetPassword: (id: string, password: string) =>
+    apiFetch<{ success: boolean }>(`/api/admin/users/${id}/reset-password`, {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    }),
   getStats: () => apiFetch<AdminStats>('/api/admin/stats'),
   getDetailedStats: (range: DateRange) =>
     apiFetch<AdminDashboardData>(`/api/admin/stats/detailed?range=${range}`),

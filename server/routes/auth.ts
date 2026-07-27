@@ -11,6 +11,12 @@ import {
   normalizeLicenseCode,
 } from '../../api/lib/validate';
 import { rateLimit } from '../middleware/rateLimit';
+import {
+  sendPasswordResetEmail,
+  generateResetToken,
+  hashResetToken,
+  resetTokenExpiresAt,
+} from '../lib/email';
 
 const router = Router();
 
@@ -181,6 +187,94 @@ router.get('/me', rateLimit, requireAuth, async (req: Request, res: Response) =>
       licenseExpiresAt: Number(user.license_expires_at) || null,
     },
   });
+});
+
+router.post('/forgot-password', rateLimit, async (req: Request, res: Response) => {
+  const { email } = req.body ?? {};
+  const emailError = validateEmail(email);
+  if (emailError) { res.status(400).json({ error: emailError }); return; }
+
+  const emailLower = (email as string).trim().toLowerCase();
+  const db = getDbClient();
+
+  const result = await db.execute({
+    sql: 'SELECT id, email, display_name FROM users WHERE email_lower = ?',
+    args: [emailLower],
+  });
+  const user = result.rows[0] as any;
+
+  // No revelar si el email existe — siempre devolvemos éxito.
+  if (user) {
+    const token = generateResetToken();
+    const tokenHash = hashResetToken(token);
+    const now = Date.now();
+    const expiresAt = resetTokenExpiresAt();
+    const id = crypto.randomUUID();
+
+    await db.execute({
+      sql: 'DELETE FROM password_resets WHERE user_id = ?',
+      args: [user.id],
+    });
+    await db.execute({
+      sql: 'INSERT INTO password_resets (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)',
+      args: [id, user.id, tokenHash, expiresAt, now],
+    });
+
+    const appUrl = (process.env.APP_URL || 'http://localhost:3001').replace(/\/$/, '');
+    const resetUrl = `${appUrl}/reset-password?token=${token}`;
+
+    try {
+      await sendPasswordResetEmail(user.email, user.display_name, resetUrl);
+    } catch (err) {
+      console.error('Error enviando email de reset:', err);
+    }
+  }
+
+  res.status(200).json({ success: true });
+});
+
+router.post('/reset-password', rateLimit, async (req: Request, res: Response) => {
+  const { token, password } = req.body ?? {};
+
+  if (!token || typeof token !== 'string') {
+    res.status(400).json({ error: 'Token inválido.' }); return;
+  }
+
+  const passwordError = validatePassword(password);
+  if (passwordError) { res.status(400).json({ error: passwordError }); return; }
+
+  const tokenHash = hashResetToken(token);
+  const now = Date.now();
+  const db = getDbClient();
+
+  const result = await db.execute({
+    sql: 'SELECT id, user_id, expires_at, used FROM password_resets WHERE token_hash = ?',
+    args: [tokenHash],
+  });
+  const reset = result.rows[0] as any;
+
+  if (!reset || reset.used === 1 || reset.expires_at < now) {
+    res.status(400).json({ error: 'El enlace ha expirado o no es válido. Solicita uno nuevo.' }); return;
+  }
+
+  const passwordHash = await hash(password as string, 10);
+
+  const tx = await db.transaction('write');
+  try {
+    await tx.execute({
+      sql: 'UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?',
+      args: [passwordHash, now, reset.user_id],
+    });
+    await tx.execute({
+      sql: 'UPDATE password_resets SET used = 1 WHERE id = ?',
+      args: [reset.id],
+    });
+    await tx.commit();
+  } finally {
+    tx.close();
+  }
+
+  res.status(200).json({ success: true });
 });
 
 export default router;
